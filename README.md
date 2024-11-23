@@ -1,1 +1,2 @@
-# Nieruchomosci_w_Polsce-
+# Nieruchomosci_w_Polsce
+Analiza danych dot.nieruchomości w Polsce
