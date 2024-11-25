@@ -16,6 +16,8 @@ dane
 
 #czyszczenie danych
 
+
 ##odstające obseracje
+
 
 ###Brakujące obserwacje
