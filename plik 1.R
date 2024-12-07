@@ -19,6 +19,7 @@ filter(!complete.cases(data)) %>%
 View()
 
 #wykres pudełkowy na ukazanie wartości odstających
+par(mfrow=c(1,2))
 boxplot(data$schoolDistance, main = "Boxplot dystans od szkoły", col = "lightblue")
 boxplot(data$rooms, main = "Boxplot dystans od szkoły", col = "lightblue")
 
