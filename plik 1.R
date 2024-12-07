@@ -1,7 +1,8 @@
 library(tidyverse)
 library(dplyr)
 library(tidyr)
-data <- (apartments_pl_2024_06)
+library(readr)
+data <- read_csv("apartments_pl_2024_06.csv")
 View(data)
 #sprawdzenie jakie mamy typy danych
 glimpse(data)
