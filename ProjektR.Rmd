@@ -14,7 +14,7 @@ dane <- read.csv(file = "apartments_pl_2024_06.csv")
 dane
 ```
 
->CZYSZCZENIE DANYCH
+#CZYSZCZENIE DANYCH
 # załadowanie wymaganych bibliotek
 library(tidyverse)
 library(dlookr)
@@ -23,7 +23,7 @@ library(VIM)
 library(deducorrect)
 library(ISLR)
 
->Wykrywanie braków danych
+#Wykrywanie braków danych
 sum(complete.cases(dane))
 nrow(dane[complete.cases(dane), ])/nrow(dane)*100
 
