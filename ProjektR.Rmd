@@ -14,7 +14,7 @@ dane <- read.csv(file = "apartments_pl_2024_06.csv")
 dane
 ```
 
-#CZYSZCZENIE DANYCH
+>CZYSZCZENIE DANYCH
 # załadowanie wymaganych bibliotek
 library(tidyverse)
 library(dlookr)
@@ -23,7 +23,7 @@ library(VIM)
 library(deducorrect)
 library(ISLR)
 
-#wykrywanie braków danych
+>Wykrywanie braków danych
 sum(complete.cases(dane))
 nrow(dane[complete.cases(dane), ])/nrow(dane)*100
 
@@ -45,7 +45,7 @@ miss_var_summary(dane)
 
 #Duże braki są zauważalne w: floor, buildYear 
 
-#Utowrzenie tabel podsumowujących według poszczególnych kategori
+#Utworzenie tabel podsumowujących według poszczególnych kategori
 dane %>%
   group_by(floor) %>%
   miss_var_summary()
