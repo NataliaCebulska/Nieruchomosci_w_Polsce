@@ -16,24 +16,38 @@ dane
 
 #CZYSZCZENIE DANYCH
 # załadowanie wymaganych bibliotek
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("editrules")
+install.packages("VIM")
+install.packages("deducorrect")
+install.packages("ISLR")
+
 library(tidyverse)
-library(dlookr)
+library(dplyr)
 library(editrules)
 library(VIM)
 library(deducorrect)
 library(ISLR)
 
 #Wykrywanie braków danych
+
 sum(complete.cases(dane))
 nrow(dane[complete.cases(dane), ])/nrow(dane)*100
 
 is.special <- function(x){if (is.numeric(x)) !is.finite(x) else is.na(x)}
 sapply(dane, is.special)
 
+for (n in colnames(dane)){
+is.na(dane[[n]]) <- is.special(dane[[n]])
+}
+summary(dane)
 
-##ODSTAJĄCE OBSERWACJE 
+##USUWANIE WARTOŚCI ODSTAJĄCYCH DLA KOLUMN NUMERYCZNYCH 
 
-
+{r, include=FALSE}
+library(dplyr)
+dane_final <- 
 
 ###BRAKUJĄCE OBSERWACJE 
 install.packages("naniar")
@@ -92,4 +106,5 @@ gg_miss_upset(dane,
 #najwięcej brakuje danych w 
 library(VIM)
 data <-hotdeck(dane)
+
 
