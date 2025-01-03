@@ -43,11 +43,6 @@ is.na(dane[[n]]) <- is.special(dane[[n]])
 }
 summary(dane)
 
-##USUWANIE WARTOŚCI ODSTAJĄCYCH DLA KOLUMN NUMERYCZNYCH 
-
-{r, include=FALSE}
-library(dplyr)
-dane_final <- 
 
 ###BRAKUJĄCE OBSERWACJE 
 install.packages("naniar")
