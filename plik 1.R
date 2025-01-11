@@ -9,6 +9,7 @@ install.packages("ISLR")
 install.packages("outliers")
 install.packages("naniar")
 install.packages("ggplot2")
+install.packages("plotly")
 
 library(tidyverse)
 library(dplyr)
@@ -21,6 +22,7 @@ library(ISLR)
 library(outliers)
 library(naniar)
 library(ggplot2)
+library(plotly)
 
 data <- read_csv("apartments_pl_2024_06.csv")
 View(data)
@@ -154,3 +156,70 @@ gg_miss_upset(data,
 #najwięcej brakuje danych w 
 
 data <-hotdeck(data)
+
+# Filtrowanie danych - tylko sprzedaż mieszkań
+data <- data %>% filter(type == "apartmentBuilding" | type == "blockOfFlats")
+
+# Wykres 1: Histogram cen mieszkań
+p1 <- ggplot(data, aes(x = price)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Rozkład cen mieszkań", x = "Cena (PLN)", y = "Liczba mieszkań") +
+  theme_minimal()
+ggplotly(p1)
+
+# Wykres 3: Scatter plot - Odległość od centrum vs cena
+p3 <- ggplot(data, aes(x = centreDistance, y = price, color = city)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm") +
+  labs(title = "Odległość od centrum a cena", x = "Odległość od centrum (km)", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p3)
+
+# Wykres 4: Liczba mieszkań według liczby pokoi
+p4 <- ggplot(data, aes(x = as.factor(rooms))) +
+  geom_bar(fill = "orange", color = "black") +
+  labs(title = "Liczba mieszkań według liczby pokoi", x = "Liczba pokoi", y = "Liczba mieszkań") +
+  theme_minimal()
+ggplotly(p4)
+
+# Wykres 5: Cena w zależności od stanu mieszkania
+p5 <- ggplot(data, aes(x = condition, y = price, fill = condition)) +
+  geom_boxplot(outlier.color = "red") +
+  labs(title = "Cena w zależności od stanu mieszkania", x = "Stan mieszkania", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p5)
+
+# Wykres 6: Cena w zależności od piętra
+p6 <- ggplot(data, aes(x = as.factor(floor), y = price)) +
+  geom_boxplot(fill = "lightblue", outlier.color = "red") +
+  labs(title = "Cena w zależności od piętra", x = "Piętro", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p6)
+
+# Wykres 7: Cena w zależności od odległości od uczelni
+p7 <- ggplot(data, aes(x = collegeDistance, y = price)) +
+  geom_point(alpha = 0.6, color = "purple") +
+  geom_smooth(method = "lm") +
+  labs(title = "Cena w zależności od odległości od uczelni", 
+       x = "Odległość od uczelni (km)", 
+       y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p7)
+
+# Wykres 8: Cena w zależności od liczby pięter w budynku
+p8 <- ggplot(data, aes(x = as.factor(floorCount), y = price)) +
+  geom_boxplot(fill = "lightpink", outlier.color = "darkred") +
+  labs(title = "Cena w zależności od liczby pięter w budynku", x = "Liczba pięter", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p8)
+
+# Wykres 9: Cena w zależności od roku budowy
+p9 <- ggplot(data, aes(x = buildYear, y = price)) +
+  geom_point(alpha = 0.6, color = "darkgreen") +
+  geom_smooth(method = "lm") +
+  labs(title = "Cena w zależności od roku budowy", 
+       x = "Rok budowy", 
+       y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p9)
+
