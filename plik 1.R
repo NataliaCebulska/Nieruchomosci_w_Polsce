@@ -8,6 +8,7 @@ install.packages("deducorrect")
 install.packages("ISLR")
 install.packages("outliers")
 install.packages("naniar")
+install.packages("ggplot2")
 
 library(tidyverse)
 library(dplyr)
@@ -19,6 +20,7 @@ library(deducorrect)
 library(ISLR)
 library(outliers)
 library(naniar)
+library(ggplot2)
 
 data <- read_csv("apartments_pl_2024_06.csv")
 View(data)
@@ -86,69 +88,69 @@ print(result)
 
 #Wykrywanie braków danych
 
-sum(complete.cases(dane))
-nrow(dane[complete.cases(dane), ])/nrow(dane)*100
+sum(complete.cases(data))
+nrow(data[complete.cases(data), ])/nrow(data)*100
 
 is.special <- function(x){if (is.numeric(x)) !is.finite(x) else is.na(x)}
-sapply(dane, is.special)
+sapply(data, is.special)
 
-for (n in colnames(dane)){
-  is.na(dane[[n]]) <- is.special(dane[[n]])
+for (n in colnames(data)){
+  is.na(data[[n]]) <- is.special(data[[n]])
 }
-summary(dane)
+summary(data)
 
 
 ###BRAKUJĄCE OBSERWACJE 
 
 #Utworzenie tabeli podsumowującej braki w tabeli 
-miss_var_summary(dane)
+miss_var_summary(data)
 
 #Duże braki są zauważalne w: floor, buildYear 
 
 #Utworzenie tabel podsumowujących według poszczególnych kategori
-dane %>%
+data %>%
   group_by(floor) %>%
   miss_var_summary()
 head(5)
 
-dane %>%
+data %>%
   group_by(collegeDistance) %>%
   miss_var_summary() 
 head(5)
 
-dane %>%
+data %>%
   group_by(floorCount) %>%
   miss_var_summary()
 head(5)
 
-dane %>%
+data %>%
   group_by(buildYear) %>%
   miss_var_summary() %>%
   head(5)
 
 
 #Tabela podsumowująca brakujące wartości według wiersza    
-dane %>%
+data %>%
   miss_case_table()
 
 #Wizualizacjia brakujących danych 
-vis_miss(dane)
+vis_miss(data)
 
 #Wizualizacjia brakujących zmiennych, według poszczególnych wierszy
-gg_miss_fct(dane, fct = floor)
+gg_miss_fct(data, fct = floor)
 
-gg_miss_fct(dane, fct = collegeDistance)
+gg_miss_fct(data, fct = collegeDistance)
 
-gg_miss_fct(dane, fct = floorCount)
+gg_miss_fct(data, fct = floorCount)
 
-gg_miss_fct(dane, fct = buildYear)
+gg_miss_fct(data, fct = buildYear)
 
 
 #Wizualizacja jak często braki współwystępują między zmiennymi 
 
-gg_miss_upset(dane, 
+gg_miss_upset(data, 
               nsets = 3)
 
 #najwięcej brakuje danych w 
 
-data <-hotdeck(dane)
+data <-hotdeck(data)
