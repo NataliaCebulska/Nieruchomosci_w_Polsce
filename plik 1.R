@@ -1,7 +1,25 @@
+#CZYSZCZENIE DANYCH
+# załadowanie wymaganych bibliotek
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("editrules")
+install.packages("VIM")
+install.packages("deducorrect")
+install.packages("ISLR")
+install.packages("outliers")
+install.packages("naniar")
+
 library(tidyverse)
 library(dplyr)
 library(tidyr)
 library(readr)
+library(editrules)
+library(VIM)
+library(deducorrect)
+library(ISLR)
+library(outliers)
+library(naniar)
+
 data <- read_csv("apartments_pl_2024_06.csv")
 View(data)
 #sprawdzenie jakie mamy typy danych
@@ -25,8 +43,7 @@ boxplot(data$rooms, main = "Boxplot dystans od szkoły", col = "lightblue")
 
 
 #Test Grubbsa na wartości odstające - metraż
-install.packages("outliers")
-library(outliers)
+
 data_column1<- data$squareMeters
 clean_data <-data$squareMeters[complete.cases(data$squareMeters)]
 result <- grubbs.test(clean_data)
@@ -67,4 +84,71 @@ print(result)
 #sum(data$rooms == '6')
 #sum(data$rooms == '3')
 
+#Wykrywanie braków danych
 
+sum(complete.cases(dane))
+nrow(dane[complete.cases(dane), ])/nrow(dane)*100
+
+is.special <- function(x){if (is.numeric(x)) !is.finite(x) else is.na(x)}
+sapply(dane, is.special)
+
+for (n in colnames(dane)){
+  is.na(dane[[n]]) <- is.special(dane[[n]])
+}
+summary(dane)
+
+
+###BRAKUJĄCE OBSERWACJE 
+
+#Utworzenie tabeli podsumowującej braki w tabeli 
+miss_var_summary(dane)
+
+#Duże braki są zauważalne w: floor, buildYear 
+
+#Utworzenie tabel podsumowujących według poszczególnych kategori
+dane %>%
+  group_by(floor) %>%
+  miss_var_summary()
+head(5)
+
+dane %>%
+  group_by(collegeDistance) %>%
+  miss_var_summary() 
+head(5)
+
+dane %>%
+  group_by(floorCount) %>%
+  miss_var_summary()
+head(5)
+
+dane %>%
+  group_by(buildYear) %>%
+  miss_var_summary() %>%
+  head(5)
+
+
+#Tabela podsumowująca brakujące wartości według wiersza    
+dane %>%
+  miss_case_table()
+
+#Wizualizacjia brakujących danych 
+vis_miss(dane)
+
+#Wizualizacjia brakujących zmiennych, według poszczególnych wierszy
+gg_miss_fct(dane, fct = floor)
+
+gg_miss_fct(dane, fct = collegeDistance)
+
+gg_miss_fct(dane, fct = floorCount)
+
+gg_miss_fct(dane, fct = buildYear)
+
+
+#Wizualizacja jak często braki współwystępują między zmiennymi 
+
+gg_miss_upset(dane, 
+              nsets = 3)
+
+#najwięcej brakuje danych w 
+
+data <-hotdeck(dane)
