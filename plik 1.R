@@ -1,7 +1,8 @@
 #CZYSZCZENIE DANYCH
-# załadowanie wymaganych bibliotek
+#Instalacja oraz załadowanie potrzebnych bibliotek
 install.packages("tidyverse")
 install.packages("dplyr")
+install.packages("readr")
 install.packages("editrules")
 install.packages("VIM")
 install.packages("deducorrect")
@@ -24,138 +25,230 @@ library(naniar)
 library(ggplot2)
 library(plotly)
 
+#1. Data cleansing
+
+#Wczytanie oraz wyświetlenie danych
 data <- read_csv("apartments_pl_2024_06.csv")
 View(data)
+
+
 #sprawdzenie jakie mamy typy danych
 glimpse(data)
-#wybór danych istotnych dla analizy, wykluczenie id ogłoszenia i współrzędnych geograficznych
-
-data %>% 
-  select(city,type,squareMeters,rooms,floor,floorCount,buildYear,centreDistance,poiCount,ends_with("distance"), ownership, buildingMaterial, condition, starts_with("has"), price)
-
-#Wyfiltrowanie w jakich wierszach jest wartość NA + dodanie tabelki w osobnej karcie, która sumuje ile jest wartości NA w każdej kolumnie
-data %>% 
-  select(city,type,squareMeters,rooms,floor,floorCount,buildYear,centreDistance,poiCount,ends_with("distance"), ownership, buildingMaterial, condition, starts_with("has"), price) %>% 
-filter(!complete.cases(data)) %>% 
-  summarise(across(everything(), ~sum(is.na(.)), .names = "NA_count_{.col}")) %>% 
-View()
-
-#wykres pudełkowy na ukazanie wartości odstających
-par(mfrow=c(1,2))
-boxplot(data$schoolDistance, main = "Boxplot dystans od szkoły", col = "lightblue")
-boxplot(data$rooms, main = "Boxplot dystans od szkoły", col = "lightblue")
 
 
-#Test Grubbsa na wartości odstające - metraż
-
-data_column1<- data$squareMeters
-clean_data <-data$squareMeters[complete.cases(data$squareMeters)]
-result <- grubbs.test(clean_data)
-print(result)
-#p-value = 0.06864
-
-#Test Grubbsa na wartości odstające - liczba pokoi
-data_column1<- data$rooms
-clean_data <-data$rooms[complete.cases(data$rooms)]
-result <- grubbs.test(clean_data)
-print(result)
-#p-value = 1 ; brak wartości odstającej
-
-#Test Grubbsa na wartości odstające - odległość od centrum
-data_column1<- data$centreDistance
-clean_data <-data$centreDistance[complete.cases(data$centreDistance)]
-result <- grubbs.test(clean_data)
-print(result)
-#p-value = 0.1603
-
-#Test Grubbsa na wartości odstające - odległość od szkoły
-data_column1<- data$schoolDistance
-clean_data <-data$schoolDistance[complete.cases(data$schoolDistance)]
-result <- grubbs.test(clean_data)
-print(result)
-#p-value < 2.2e-16; jest wartość odstająca
-
-#mean(data$squareMeters, na.rm=TRUE)
-#min(data$squareMeters, na.rm=TRUE)
-#max(data$squareMeters, na.rm=TRUE)
-#sum(data$squareMeters == '25')
-#sum(data$squareMeters == '125')
-
-#mean(data$rooms, na.rm=TRUE)
-#min(data$rooms, na.rm=TRUE)
-#max(data$rooms, na.rm=TRUE)
-#sum(data$rooms == '1')
-#sum(data$rooms == '6')
-#sum(data$rooms == '3')
-
-#Wykrywanie braków danych
-
-sum(complete.cases(data))
-nrow(data[complete.cases(data), ])/nrow(data)*100
-
-is.special <- function(x){if (is.numeric(x)) !is.finite(x) else is.na(x)}
-sapply(data, is.special)
-
-for (n in colnames(data)){
-  is.na(data[[n]]) <- is.special(data[[n]])
-}
-summary(data)
+#Sprawdzenie czy mamy prakujące obserwacje oraz ile ich jest
+n_miss(data)
 
 
-###BRAKUJĄCE OBSERWACJE 
-
-#Utworzenie tabeli podsumowującej braki w tabeli 
+#Sprawdzenie ile brakujących obserwacji jest w każdej kolumnie
 miss_var_summary(data)
-
-#Duże braki są zauważalne w: floor, buildYear 
-
-#Utworzenie tabel podsumowujących według poszczególnych kategori
-data %>%
-  group_by(floor) %>%
-  miss_var_summary()
-head(5)
-
-data %>%
-  group_by(collegeDistance) %>%
-  miss_var_summary() 
-head(5)
-
-data %>%
-  group_by(floorCount) %>%
-  miss_var_summary()
-head(5)
-
-data %>%
-  group_by(buildYear) %>%
-  miss_var_summary() %>%
-  head(5)
+#największe braki danych w kolumnach condition, buildingMaterial, type, floor oraz buildYear (w każdym powyżej 15%) 
 
 
-#Tabela podsumowująca brakujące wartości według wiersza    
-data %>%
-  miss_case_table()
-
-#Wizualizacjia brakujących danych 
-vis_miss(data)
-
-#Wizualizacjia brakujących zmiennych, według poszczególnych wierszy
-gg_miss_fct(data, fct = floor)
-
-gg_miss_fct(data, fct = collegeDistance)
-
-gg_miss_fct(data, fct = floorCount)
-
-gg_miss_fct(data, fct = buildYear)
+#Pokazanie ile jest brakujących obserwacji w wierszach
+miss_case_table(data)
+#Większość obserwacji ma od 1 do 3 braków, co pozwala na zastosowanie imputacji brakujących danych
 
 
-#Wizualizacja jak często braki współwystępują między zmiennymi 
+#Wizualizacja braków danych
+vis_miss(data, cluster = TRUE, sort_miss = TRUE)
+#graficzne ukzanie, w których kolumnach mamy najwięcej brakujacych danych. Wykres potwierdza, że są to kolumny condition (74%), building material (41%), type (20%), floor (17%) oraz buildYear (16%)
 
-gg_miss_upset(data, 
-              nsets = 3)
 
-#najwięcej brakuje danych w 
 
-data <-hotdeck(data)
+#wykres przedstawiający wzorce braków danych
+gg_miss_upset(data)
+#Z wykresu możemy odczytać, że najwięcej braków danych występuje jedynie w kolumnie condition, bez współwystępowania braku w innych kolumnach. Większa liczba braków danych występuje też zależnie zarówno w kolumnie condition jak i buildingMaterial oraz w kolumnach condition, buildingMaterial i type
+
+
+
+# Grupowanie braków według miasta
+data %>% 
+  group_by(city) %>% 
+  miss_var_summary() %>% 
+  View()
+#Nie ma istotnych różnic w brakach danych między miastami. Ww wszystkich największy odsetek brakujacych danych stanowi kolumna condition.
+
+
+
+
+#Sprawdzenie wartości odstających
+
+numeric_columns <- data %>% select(where(is.numeric)) %>% colnames()
+
+for (col in numeric_columns) {
+  cat("\nKolumna:", col, "\n")
+  
+  # Tworzenie wykresu pudełkowego
+  boxplot_result <- boxplot(data[[col]], 
+                            main = paste("Wykres pudełkowy dla", col), 
+                            col = "lightblue", 
+                            ylab = col)
+  
+
+}
+
+#Analiza wartości odstających:
+
+#Cena -> wartości odstające powyżej 2mln, do 3mn - brak podstaw do usuwania dancyh odstających, gdyż są to realne ceny za mieszkania
+#Metry kwadratowe -> wartości odstające do max 140m2 - mają sens
+#Pokoje, piętra oraz liczba pięter -> niewielka liczba możliwych wartości odstających, piętro na kt.orym jest mieszkanie nie przewyższa ogólnej liczby pięter
+#Rok budowy -> wartości odstające poniżej roku 1900, lecz powyżej roku 1850 - mają sens
+#poiCount?
+#Dużo wartości odstających w odległościach do różnych punkót usłgowych, lecz poniżej 5km - wyniki mają sens
+#Na podstawie powyższej analizy, możemy stwierdzic, że pomimo występowania wartości odstających nie wyglądają one na błędy i nasze dane są spójne, brak konieczności usuwania danych odstających
+
+
+
+#Imputacja danych
+
+#1. Condition
+# Z racji tego, że stan normalny zazwyczaj nie jest określany w ogłoszeniach nieruchomości (chcemy się pochwalić stanem premium lub zaznaczyć niski standard mieszkania), z logicznego punktu widzenia, możemy uzupełnić braki danych w tej kolumnie jako 'standard'
+
+data1Condition <- data %>% 
+  mutate(condition = ifelse(is.na(condition), "Standard", condition))
+View(data1Condition)
+na_count_condition <- sum(is.na(data1Condition$condition))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#2. Building Material 
+#Zmienna ta nie powinna mieć istotnego wpływu na cenę, kupujący zazwyczaj nie zwacają uwagi na aspekt matriałów użytych do budowy domu, w którym znajduje się mieszkanie. Aby zastąpić brakujące obserwacje użyjemy sformułowania "Material is not known/different building material". Jeśli w późniejszej analizie zostanie wykazany wpływ tego czynnika na cenę, bedziemy brać go pod uwagę.
+data2Condition.buildingMaterial <- data1Condition %>% 
+  mutate(buildingMaterial = ifelse(is.na(buildingMaterial), "Material is not known/different building material", buildingMaterial))
+View(data2Condition.buildingMaterial)
+na_count_condition <- sum(is.na(data2Condition.buildingMaterial$buildingMaterial))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#3.Type
+#Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
+
+
+dataCBT <- kNN(data2Condition.buildingMaterial, 
+                    variable = c("type"),        
+                    k = 5,                       
+                    weightDist = TRUE)          
+View(dataCBT)
+
+na_count_condition <- sum(is.na(dataCBT$type))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#4. Floor Count 
+#Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne city, type oraz condition.
+dataCBTFC <- dataCBT %>%
+  group_by(city, type, condition) %>%  
+  mutate(floorCount = ifelse(is.na(floorCount), median(floorCount, na.rm = TRUE), floorCount)) %>%
+  ungroup()
+View(dataCBTFC)
+na_count_condition <- sum(is.na(dataCBTFC$floorCount))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#5.Floor 
+#Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount oraz type.
+
+data2 <- dataCBTFC %>%
+  group_by(floorCount, type) %>%
+  mutate(floor = ifelse(is.na(floor), median(floor, na.rm = TRUE), floor)) %>%
+  ungroup()
+View(data2)
+na_count_condition <- sum(is.na(data2$floor))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#6. Build Year
+#Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount, type, city.
+
+data3 <- data2 %>%
+  group_by(floorCount, type, city) %>%
+  mutate(buildYear = ifelse(is.na(buildYear), median(buildYear, na.rm = TRUE), buildYear)) %>%
+  ungroup()
+View(data3)
+na_count_condition <- sum(is.na(data3$buildYear))
+print(na_count_condition)
+
+#37 wartości NA, ponawiamy imputację danych za pomocą mediany, lecz tym razem dla całego zbioru danych (liczba brakujących obserwacji jest bardzo mała)
+
+data4 <- data3 %>%
+  mutate(buildYear = ifelse(is.na(buildYear), 
+                            median(buildYear, na.rm = TRUE), 
+                            buildYear))
+na_count_condition <- sum(is.na(data4$buildYear))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#7.has Elevator
+#Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
+
+data5 <- kNN(data4, 
+                variable = c("hasElevator"),
+                k = 5, 
+                weightDist = TRUE)
+View(data5)
+
+na_count_condition <- sum(is.na(data5$hasElevator))
+print(na_count_condition)
+#Brak wartości NA
+
+
+
+#8. Distance - college, clinic, restaurant, pharmacy, postoffice, kindergarten, school
+#Mała liczba wartości NA, imputacja może być wyliczana na podstawie mediany dla wszystkich obserwacji
+
+data1 <- data5 %>%
+  mutate(collegeDistance = ifelse(is.na(collegeDistance), median(collegeDistance, na.rm = TRUE), collegeDistance))
+
+miss_var_summary(data1)
+
+data2 <- data1 %>%
+  mutate(clinicDistance = ifelse(is.na(clinicDistance), median(clinicDistance, na.rm = TRUE), clinicDistance))
+
+miss_var_summary(data2)
+
+data3 <- data2 %>%
+  mutate(restaurantDistance = ifelse(is.na(restaurantDistance), median(restaurantDistance, na.rm = TRUE), restaurantDistance))
+
+miss_var_summary(data3)
+
+data4 <- data3 %>%
+  mutate(pharmacyDistance = ifelse(is.na(pharmacyDistance), median(pharmacyDistance, na.rm = TRUE), pharmacyDistance))
+
+miss_var_summary(data4)
+
+data5 <- data4 %>%
+  mutate(postOfficeDistance = ifelse(is.na(postOfficeDistance), median(postOfficeDistance, na.rm = TRUE), postOfficeDistance))
+
+miss_var_summary(data5)
+
+data6 <- data5 %>%
+  mutate(kindergartenDistance = ifelse(is.na(kindergartenDistance), median(kindergartenDistance, na.rm = TRUE), kindergartenDistance))
+
+miss_var_summary(data6)
+
+data7 <- data6 %>%
+  mutate(schoolDistance = ifelse(is.na(schoolDistance), median(schoolDistance, na.rm = TRUE), schoolDistance))
+miss_var_summary(data7)
+
+#BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH
+
+
+
+
+
 
 # Filtrowanie danych - tylko sprzedaż mieszkań
 data <- data %>% filter(type == "apartmentBuilding" | type == "blockOfFlats")
