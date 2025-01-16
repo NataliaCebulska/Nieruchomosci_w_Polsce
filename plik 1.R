@@ -1,5 +1,6 @@
 #CZYSZCZENIE DANYCH
 #Instalacja oraz załadowanie potrzebnych bibliotek
+#Instalacja oraz załadowanie potrzebnych bibliotek
 install.packages("tidyverse")
 install.packages("dplyr")
 install.packages("readr")
@@ -11,6 +12,9 @@ install.packages("outliers")
 install.packages("naniar")
 install.packages("ggplot2")
 install.packages("plotly")
+install.packages("knitr")
+install.packages("gtsummary")
+install.packages("corrplot")
 
 library(tidyverse)
 library(dplyr)
@@ -18,12 +22,15 @@ library(tidyr)
 library(readr)
 library(editrules)
 library(VIM)
+library(corrplot)
 library(deducorrect)
 library(ISLR)
 library(outliers)
 library(naniar)
 library(ggplot2)
 library(plotly)
+library(knitr)
+library(gtsummary)
 
 #1. Data cleansing
 
@@ -315,4 +322,184 @@ p9 <- ggplot(data, aes(x = buildYear, y = price)) +
        y = "Cena (PLN)") +
   theme_minimal()
 ggplotly(p9)
+
+#Analiza opisowa
+#Obliczenie statystyk opisowych dla ceny mieszkania w zależności od miast, liczby pokoi oraz typu budynku
+#Tabela 1 Rozkład cen w zależności od liczby pokoi
+data7 %>%
+  select(price, rooms) %>%
+  tbl_summary(
+    by = rooms,  # Grupowanie wg liczby pokoi
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 1. Rozkład cen wg liczby pokoi**") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) 
+
+#Tabela 2. Rozkład cen w zależności od miejscowości
+data7 %>%
+  select(price, city) %>%
+  tbl_summary(
+    by = city,  # Grupowanie wg miejscowości
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 2. Rozkład cen w zależności od miejscowości**") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))
+
+#Tabela 3 Rozkład cen w zależności od typu mieszkania
+data7 %>%
+  select(price, type) %>%
+  tbl_summary(
+    by = type,  # Grupowanie wg miejscowości
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 3. Rozkład cen w zależności od typu **") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))  
+
+
+#WNIOSKOWANIE STATYCZNE 
+
+#przeprowadzenie testu ANOVA - sprawdzenie czy średnie ceny różnią się między miastami
+anova_model <-aov(price ~ city, data = data7)
+summary(anova_model)
+
+if(summary(anova_model)[[1]]$`Pr(>F)`[1] < 0.05) {
+  tukey_result <- TukeyHSD(anova_model)
+  print(tukey_result)}
+
+#Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
+anova_type <- aov(price ~ type, data = data7)
+summary(anova_type)
+# Istnieją istotne różnice w cenach mieszkań 
+
+tukey_result <- TukeyHSD(anova_model)
+print(tukey_result)
+#Test Tukeya potwierdza głębokie zróżnicowanie cen mieszkań w Polsce.
+#Najwyższe ceny występują w dużych aglomeracjach, podczas gdy mniejsze miasta pozostają znacznie tańsze.
+#Miasta o najwyższych cenach mieszkań: Warszawa, Kraków, Gdańsk, Wrocław i Poznań mają istotnie wyższe
+#ceny mieszkań w porównaniu z większością innych miast (np. różnice sięgające nawet 500 000 PLN).
+#Przykład: warszawa-bialystok: różnica +541 443 PLN (p < 0.0001). krakow-bialystok: różnica +430 477 PLN (p < 0.0001).
+
+# Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
+anova_type <- aov(price ~ type, data = data7)
+summary(anova_type)
+
+if (summary(anova_type)[[1]]$`Pr(>F)`[1] < 0.05) {
+  tukey_type <- TukeyHSD(anova_type)
+  print(tukey_type)
+}
+# Apartamentowce wymagają większego kapitału, bloki mieszkalne są bardziej przystępne cenowo, a kamienice stanowią pośrednią opcję.
+
+#1. Porównanie: blok mieszkalny vs apartamentowiec: Bloki mieszkalne są średnio o 365 815 zł tańsze niż apartamentowce.
+#2. Porównanie: kamienica vs apartamentowiec: Kamienice są średnio o 211 115 zł tańsze niż apartamentowce.
+#3. Porównanie: kamienica vs blok mieszkalny: Kamienice są średnio o 154 701 zł droższe niż bloki mieszkalne.
+
+# Korelacja między ceną a odległością od uczelni
+cor_test_college <- cor.test(data7$price, data7$collegeDistance, method = "pearson")
+print(cor_test_college)
+#bliskość uczelni nie jest istotnym czynnikiem kształtującym ceny mieszkań.
+
+
+# Korelacja między ceną a odległością od centrum
+cor_test_centre <- cor.test(data7$price, data7$centreDistance, method = "pearson")
+print(cor_test_centre)
+#odległość od centrum ma bardzo niewielki wpływ na ceny mieszkań.
+
+# Korelacja między ceną a rokiem budowy
+cor_test_buildYear <- cor.test(data7$price, data7$buildYear, method = "pearson")
+print(cor_test_buildYear)
+#nowsze budynki mają tendencję do wyższych cen
+
+# Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między stanami mieszkań
+anova_condition <- aov(price ~ condition, data = data7)
+summary(anova_condition)
+#stan mieszkania ma znaczący wpływ na cenę,
+
+if (summary(anova_condition)[[1]]$`Pr(>F)`[1] < 0.05) {
+  tukey_condition <- TukeyHSD(anova_condition)
+  print(tukey_condition)
+}
+
+ggplot(data7, aes(x = condition, y = price, fill = condition)) +
+  geom_boxplot(outlier.color = "red") +
+  labs(title = "Średnie ceny mieszkań w zależności od stanu", x = "Stan mieszkania", y = "Cena (PLN)") +
+  theme_minimal()
+#Średnie ceny mieszkań znacząco różnią się w zależności od stanu mieszkania:
+#Mieszkania w stanie premium mają najwyższe średnie ceny.
+#Mieszkania w stanie Standard są droższe niż w stanie low, ale tańsze niż premium.
+#Stan low wiąże się z najniższymi średnimi cenami mieszkań.
+
+# Tworzenie tabeli kontyngencji dla miasta i typu mieszkania
+contingency_table <- table(data7$city, data7$type)
+
+# Przeprowadzenie testu Chi-kwadrat
+chi_square_result <- chisq.test(contingency_table)
+print(chi_square_result)
+print(chi_square_result$expected)
+mosaicplot(contingency_table, main = "Mozaikowy wykres zależności", color = TRUE, las = 3)
+
+# Przeprowadzenie testu t-Studenta, aby porównać ceny mieszkań z windą i bez windy
+t_test_elevator <- t.test(price ~ hasElevator, data = data7)
+print(t_test_elevator)
+#Wyniki testu wskazują, że obecność windy ma istotny wpływ na cenę mieszkań. 
+#Mieszkania z windą są średnio droższe od mieszkań bez windy o około 177 000 PLN.
+#Może to wynikać z faktu, że winda jest istotnym udogodnieniem, szczególnie w budynkach 
+#wielopiętrowych. Wpływa na postrzeganą wartość nieruchomości.
+
+ggplot(data7, aes(x = hasElevator, y = price, fill = hasElevator)) +
+  geom_boxplot(outlier.color = "red") +
+  labs(title = "Porównanie cen mieszkań z windą i bez windy",
+       x = "Czy mieszkanie ma windę?",
+       y = "Cena (PLN)") +
+  theme_minimal()
+
+
+# Test Kruskala-Wallisa do porównania cen między miastami
+kruskal_result <- kruskal.test(price ~ city, data = data7)
+print(kruskal_result)
+#Wyniki testu Kruskala-Wallisa wskazują, że istnieją statystycznie istotne 
+#różnice w rozkładach cen mieszkań między miastami.
+pairwise.wilcox.test(data7$price, data7$city, p.adjust.method = "bonferroni")
+#Większość miast różni się istotnie pod względem median cen mieszkań, co wskazuje 
+#na zróżnicowany rynek nieruchomości w zależności od lokalizacji.
+
+ggplot(data7, aes(x = city, y = price, fill = city)) +
+  geom_boxplot(outlier.color = "red") +
+  labs(title = "Porównanie cen mieszkań w różnych miastach",
+       x = "Miasto",
+       y = "Cena (PLN)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
