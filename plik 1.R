@@ -1,5 +1,6 @@
 #CZYSZCZENIE DANYCH
 #Instalacja oraz załadowanie potrzebnych bibliotek
+#Instalacja oraz załadowanie potrzebnych bibliotek
 install.packages("tidyverse")
 install.packages("dplyr")
 install.packages("readr")
@@ -11,6 +12,9 @@ install.packages("outliers")
 install.packages("naniar")
 install.packages("ggplot2")
 install.packages("plotly")
+install.packages("knitr")
+install.packages("gtsummary")
+install.packages("corrplot")
 
 library(tidyverse)
 library(dplyr)
@@ -18,12 +22,15 @@ library(tidyr)
 library(readr)
 library(editrules)
 library(VIM)
+library(corrplot)
 library(deducorrect)
 library(ISLR)
 library(outliers)
 library(naniar)
 library(ggplot2)
 library(plotly)
+library(knitr)
+library(gtsummary)
 
 #1. Data cleansing
 
@@ -316,3 +323,67 @@ p9 <- ggplot(data, aes(x = buildYear, y = price)) +
   theme_minimal()
 ggplotly(p9)
 
+#Analiza opisowa
+#Obliczenie statystyk opisowych dla ceny mieszkania w zależności od miast, liczby pokoi oraz typu budynku
+#Tabela 1 Rozkład cen w zależności od liczby pokoi
+data7 %>%
+  select(price, rooms) %>%
+  tbl_summary(
+    by = rooms,  # Grupowanie wg liczby pokoi
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 1. Rozkład cen wg liczby pokoi**") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) 
+
+#Tabela 2. Rozkład cen w zależności od miejscowości
+data7 %>%
+  select(price, city) %>%
+  tbl_summary(
+    by = city,  # Grupowanie wg miejscowości
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 2. Rozkład cen w zależności od miejscowości**") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))
+
+#Tabela 3 Rozkład cen w zależności od typu mieszkania
+data7 %>%
+  select(price, type) %>%
+  tbl_summary(
+    by = type,  # Grupowanie wg miejscowości
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 3. Rozkład cen w zależności od typu **") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))  
