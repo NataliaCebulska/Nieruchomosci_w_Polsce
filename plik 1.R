@@ -503,3 +503,53 @@ ggplot(data7, aes(x = city, y = price, fill = city)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+#Wykorzystanie pakietu ggstatsplot
+install.packages("ggstatsplot")
+library(ggstatsplot)
+library(dplyr)
+
+top_cities <- data7 %>%
+  group_by(city) %>%
+  summarise(mean_price = mean(price)) %>%
+  arrange(desc(mean_price)) %>%
+  slice(1:5) # Ograniczenie do 5 miast z najwyższymi cenami
+
+filtered_data <- data7 %>%
+  filter(city %in% top_cities$city)
+
+ggbetweenstats(
+  data = filtered_data,
+  x = city,
+  y = price,
+  type = "parametric",
+  pairwise.comparisons = TRUE,
+  pairwise.display = "significant", # Tylko istotne porównania
+  mean.plotting = FALSE,            # Wyłącz dolny wykres średnich
+  p.adjust.method = "bonferroni",
+  ggtheme = ggplot2::theme_minimal(),
+  title = "Porównanie cen mieszkań w wybranych miastach"
+) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set2")
+
+#Dodanie testów zgodności rozkładu
+install.packages("nortest")
+library(nortest)
+lillie.test(data7$price) # Test Lillieforsa dla ceny
+
+#Analiza wielowymiarowa – rozszerzenie modelu regresji
+lm_interaction <- lm(price ~ rooms * buildYear, data = data7)
+summary(lm_interaction)
+plot(lm_model) # Wykresy diagnostyczne
+
+#Przykłady rozszerzonych analiz i wizualizacji
+#Porównanie odległości od uczelni i od centrum w kontekście cen mieszkań
+ggscatterstats(
+  data = data7,
+  x = collegeDistance,
+  y = price,
+  title = "Korelacja między ceną a odległością od uczelni",
+  xlab = "Odległość od uczelni (km)",
+  ylab = "Cena (PLN)"
+)
+
