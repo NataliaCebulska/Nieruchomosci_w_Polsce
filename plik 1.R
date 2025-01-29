@@ -253,10 +253,6 @@ miss_var_summary(data7)
 #BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH
 
 
-
-
-
-
 # Filtrowanie danych - tylko sprzedaż mieszkań
 data <- data %>% filter(type == "apartmentBuilding" | type == "blockOfFlats")
 
@@ -496,11 +492,10 @@ pairwise.wilcox.test(data7$price, data7$city, p.adjust.method = "bonferroni")
 #na zróżnicowany rynek nieruchomości w zależności od lokalizacji.
 
 ggplot(data7, aes(x = city, y = price, fill = city)) +
-  geom_boxplot(outlier.color = "red") +
+  # geom_boxplot(outlier.color = "blue") +
   labs(title = "Porównanie cen mieszkań w różnych miastach",
        x = "Miasto",
-       y = "Cena (PLN)") +
-  theme_minimal() +
+       y = "Cena (PLN)") + theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 #Wykorzystanie pakietu ggstatsplot
@@ -550,6 +545,6 @@ ggscatterstats(
   y = price,
   title = "Korelacja między ceną a odległością od uczelni",
   xlab = "Odległość od uczelni (km)",
-  ylab = "Cena (PLN)"
-)
+  ylab = "Cena (PLN)")
+
 
