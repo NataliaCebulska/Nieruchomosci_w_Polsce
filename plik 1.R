@@ -1,6 +1,6 @@
 #CZYSZCZENIE DANYCH
 #Instalacja oraz załadowanie potrzebnych bibliotek
-#Instalacja oraz załadowanie potrzebnych bibliotek
+
 install.packages("tidyverse")
 install.packages("dplyr")
 install.packages("readr")
@@ -136,7 +136,7 @@ print(na_count_condition)
 #Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
 
 
-dataCBT <- kNN(data2Condition.buildingMaterial, 
+dataCBT <- kNN(data2Condition.buildingMaterial,
                     variable = c("type"),        
                     k = 5,                       
                     weightDist = TRUE)          
