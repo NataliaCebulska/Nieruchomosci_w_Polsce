@@ -263,13 +263,27 @@ p1 <- ggplot(data, aes(x = price)) +
   theme_minimal()
 ggplotly(p1)
 
-# Wykres 3: Scatter plot - Odległość od centrum vs cena
-p3 <- ggplot(data, aes(x = centreDistance, y = price, color = city)) +
-  geom_point(alpha = 0.6) +
+# Wykres 2: Scatter plot - Odległość od centrum vs cena
+p2 <- ggplot(data, aes(x = centreDistance, y = price)) +
+  geom_point(alpha = 0.6, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Odległość od centrum a cena", 
+       x = "Odległość od centrum (km)", 
+       y = "Cena (PLN)") +
+  theme_minimal() +
+  facet_wrap(~ city)
+
+# Wykres 3: Cena w zależności od odległości od uczelni
+p3 <- ggplot(data, aes(x = collegeDistance, y = price)) +
+  geom_point(alpha = 0.6, color = "purple") +
   geom_smooth(method = "lm") +
-  labs(title = "Odległość od centrum a cena", x = "Odległość od centrum (km)", y = "Cena (PLN)") +
-  theme_minimal()
+  labs(title = "Cena w zależności od odległości od uczelni", 
+       x = "Odległość od uczelni (km)", 
+       y = "Cena (PLN)") +
+  theme_minimal() +
+  facet_wrap(~ city)
 ggplotly(p3)
+
 
 # Wykres 4: Liczba mieszkań według liczby pokoi
 p4 <- ggplot(data, aes(x = as.factor(rooms))) +
@@ -292,32 +306,22 @@ p6 <- ggplot(data, aes(x = as.factor(floor), y = price)) +
   theme_minimal()
 ggplotly(p6)
 
-# Wykres 7: Cena w zależności od odległości od uczelni
-p7 <- ggplot(data, aes(x = collegeDistance, y = price)) +
-  geom_point(alpha = 0.6, color = "purple") +
-  geom_smooth(method = "lm") +
-  labs(title = "Cena w zależności od odległości od uczelni", 
-       x = "Odległość od uczelni (km)", 
-       y = "Cena (PLN)") +
-  theme_minimal()
-ggplotly(p7)
-
-# Wykres 8: Cena w zależności od liczby pięter w budynku
-p8 <- ggplot(data, aes(x = as.factor(floorCount), y = price)) +
+# Wykres 7: Cena w zależności od liczby pięter w budynku
+p7 <- ggplot(data, aes(x = as.factor(floorCount), y = price)) +
   geom_boxplot(fill = "lightpink", outlier.color = "darkred") +
   labs(title = "Cena w zależności od liczby pięter w budynku", x = "Liczba pięter", y = "Cena (PLN)") +
   theme_minimal()
-ggplotly(p8)
+ggplotly(p7)
 
-# Wykres 9: Cena w zależności od roku budowy
-p9 <- ggplot(data, aes(x = buildYear, y = price)) +
+# Wykres 8: Cena w zależności od roku budowy
+p8 <- ggplot(data, aes(x = buildYear, y = price)) +
   geom_point(alpha = 0.6, color = "darkgreen") +
   geom_smooth(method = "lm") +
   labs(title = "Cena w zależności od roku budowy", 
        x = "Rok budowy", 
        y = "Cena (PLN)") +
   theme_minimal()
-ggplotly(p9)
+ggplotly(p8)
 
 #Analiza opisowa
 #Obliczenie statystyk opisowych dla ceny mieszkania w zależności od miast, liczby pokoi oraz typu budynku
