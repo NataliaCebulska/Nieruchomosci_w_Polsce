@@ -2,6 +2,8 @@
 title: "Nieruchomości w Polsce"
 author: "Natalia Cebulska, Natalia Leżuchowska, Błażej Bojka, Kacper Karnath"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
 ---
 
@@ -90,34 +92,116 @@ data %>%
 Nie ma istotnych różnic w brakach danych między miastami. Ww wszystkich największy odsetek brakujacych danych stanowi kolumna condition.
 
 
-## Sprawdzenie wartości odstających
+## Sprawdzenie i analiza wartości odstających
 
-```{r}
-numeric_columns <- data %>% select(where(is.numeric)) %>% colnames()
+```{r warning=FALSE}
+library(ggplot2)
+library(patchwork)
 
-for (col in numeric_columns) {
-  cat("\nKolumna:", col, "\n")
-  
-  # Tworzenie wykresu pudełkowego
-  boxplot_result <- boxplot(data[[col]], 
-                            main = paste("Wykres pudełkowy dla", col), 
-                            col = "lightblue", 
-                            ylab = col)
-  
+wykres1 <- ggplot(data, aes(y = price)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot cena")
 
-}
+wykres2 <- ggplot(data, aes(y = squareMeters)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot metry kwadratowe")
+
+combined_plots <- wykres1 + wykres2
+combined_plots
 ```
-
-
-Analiza wartości odstających:
 
 Cena -> wartości odstające powyżej 2mln, do 3mn - brak podstaw do usuwania dancyh odstających, gdyż są to realne ceny za mieszkania
 
 Metry kwadratowe -> wartości odstające do max 140m2 - mają sens
 
+```{r warning=FALSE}
+library(ggplot2)
+library(patchwork)
+
+wykres1 <- ggplot(data, aes(y = rooms)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot pokoje")
+
+wykres2 <- ggplot(data, aes(y = floor)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot piętro")
+
+
+combined_plots <- wykres1 + wykres2 
+combined_plots
+
+```
+```{r warning=FALSE}
+wykres3 <- ggplot(data, aes(y = floorCount)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot liczba pięter")
+
+wykres4 <- ggplot(data, aes(y = buildYear)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot rok budowy")
+
+combined_plots <- wykres3 + wykres4 
+combined_plots
+
+```
+
+
 Pokoje, piętra oraz liczba pięter -> niewielka liczba możliwych wartości odstających, piętro na kt.orym jest mieszkanie nie przewyższa ogólnej liczby pięter
 
 Rok budowy -> wartości odstające poniżej roku 1900, lecz powyżej roku 1850 - mają sens
+
+```{r warning=FALSE}
+library(ggplot2)
+library(patchwork)
+
+wykres1 <- ggplot(data, aes(y = centreDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do centrum")
+
+wykres2 <- ggplot(data, aes(y = schoolDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do szkoły")
+
+combined_plots <- wykres1 + wykres2 
+combined_plots
+
+wykres3 <- ggplot(data, aes(y = clinicDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do kliniki")
+
+
+wykres4 <- ggplot(data, aes(y = postOfficeDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do poczty")
+
+combined_plots <- wykres3 + wykres4 
+combined_plots
+
+wykres5 <- ggplot(data, aes(y = kindergartenDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do przedszkola")
+
+wykres6 <- ggplot(data, aes(y = restaurantDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do restauracji")
+
+combined_plots <- wykres5 + wykres6
+combined_plots
+
+wykres7 <- ggplot(data, aes(y = collegeDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do uniwersytetu")
+
+wykres8 <- ggplot(data, aes(y = pharmacyDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot liczba dystans do apteki")
+
+combined_plots <- wykres7 + wykres8 
+combined_plots
+```
+
+
+
 
 Dużo wartości odstających w odległościach do różnych punkót usłgowych, lecz poniżej 5km - wyniki mają sens
 
@@ -130,7 +214,7 @@ Na podstawie powyższej analizy, możemy stwierdzic, że pomimo występowania wa
 1. Condition
 
  Z racji tego, że stan normalny zazwyczaj nie jest określany w ogłoszeniach nieruchomości (chcemy się pochwalić stanem premium lub zaznaczyć niski standard mieszkania), z logicznego punktu widzenia, możemy uzupełnić braki danych w tej kolumnie jako 'standard'
-```{r}
+```{r warning=FALSE}
 data1Condition <- data %>% 
   mutate(condition = ifelse(is.na(condition), "Standard", condition))
 View(data1Condition)
@@ -145,7 +229,7 @@ Brak wartości NA
 2. Building Material 
 
 Zmienna ta nie powinna mieć istotnego wpływu na cenę, kupujący zazwyczaj nie zwacają uwagi na aspekt matriałów użytych do budowy domu, w którym znajduje się mieszkanie. Aby zastąpić brakujące obserwacje użyjemy sformułowania "Material is not known/different building material". Jeśli w późniejszej analizie zostanie wykazany wpływ tego czynnika na cenę, bedziemy brać go pod uwagę.
-```{r}
+```{r warning=FALSE}
 data2Condition.buildingMaterial <- data1Condition %>% 
   mutate(buildingMaterial = ifelse(is.na(buildingMaterial), "Material is not known/different building material", buildingMaterial))
 View(data2Condition.buildingMaterial)
@@ -160,7 +244,7 @@ Brak wartości NA
 3.Type
 
 Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
-```{r}
+```{r warning=FALSE}
 dataCBT <- kNN(data2Condition.buildingMaterial,
                     variable = c("type"),        
                     k = 5,                       
@@ -178,7 +262,7 @@ Brak wartości NA
 4. Floor Count 
 
 Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne city, type oraz condition.
-```{r}
+```{r warning=FALSE}
 dataCBTFC <- dataCBT %>%
   group_by(city, type, condition) %>%  
   mutate(floorCount = ifelse(is.na(floorCount), median(floorCount, na.rm = TRUE), floorCount)) %>%
@@ -194,7 +278,7 @@ Brak wartości NA
 5.Floor 
 
 Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount oraz type.
-```{r}
+```{r warning=FALSE}
 data2 <- dataCBTFC %>%
   group_by(floorCount, type) %>%
   mutate(floor = ifelse(is.na(floor), median(floor, na.rm = TRUE), floor)) %>%
@@ -211,7 +295,7 @@ Brak wartości NA
 6. Build Year
 
 Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount, type, city.
-```{r}
+```{r warning=FALSE}
 data3 <- data2 %>%
   group_by(floorCount, type, city) %>%
   mutate(buildYear = ifelse(is.na(buildYear), median(buildYear, na.rm = TRUE), buildYear)) %>%
@@ -224,7 +308,7 @@ print(na_count_condition)
 
 37 wartości NA, ponawiamy imputację danych za pomocą mediany, lecz tym razem dla całego zbioru danych (liczba brakujących obserwacji jest bardzo mała)
 
-```{r}
+```{r warning=FALSE}
 data4 <- data3 %>%
   mutate(buildYear = ifelse(is.na(buildYear), 
                             median(buildYear, na.rm = TRUE), 
@@ -240,7 +324,7 @@ Brak wartości NA
 7.has Elevator
 
 Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
-```{r}
+```{r warning=FALSE}
 data5 <- kNN(data4, 
                 variable = c("hasElevator"),
                 k = 5, 
@@ -259,7 +343,7 @@ Brak wartości NA
 
 Mała liczba wartości NA, imputacja może być wyliczana na podstawie mediany dla wszystkich obserwacji
 
-```{r}
+```{r warning=FALSE}
 data1 <- data5 %>%
   mutate(collegeDistance = ifelse(is.na(collegeDistance), median(collegeDistance, na.rm = TRUE), collegeDistance))
 
@@ -298,4 +382,172 @@ miss_var_summary(data7)
 
 **BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH**
 
+# Wizualizacja danych
 
+## Wykres 1: Histogram cen mieszkań
+```{r}
+p1 <- ggplot(data, aes(x = price)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Rozkład cen mieszkań", x = "Cena (PLN)", y = "Liczba mieszkań") +
+  theme_minimal()
+ggplotly(p1)
+```
+
+
+## Wykres 2: Scatter plot - Odległość od centrum vs cena
+```{r}
+p2 <- ggplot(data, aes(x = centreDistance, y = price)) +
+  geom_point(alpha = 0.6, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Odległość od centrum a cena", 
+       x = "Odległość od centrum (km)", 
+       y = "Cena (PLN)") +
+  theme_minimal() +
+  facet_wrap(~ city)
+```
+
+
+
+## Wykres 3: Cena w zależności od odległości od uczelni
+```{r}
+p3 <- ggplot(data, aes(x = collegeDistance, y = price)) +
+  geom_point(alpha = 0.6, color = "purple") +
+  geom_smooth(method = "lm") +
+  labs(title = "Cena w zależności od odległości od uczelni", 
+       x = "Odległość od uczelni (km)", 
+       y = "Cena (PLN)") +
+  theme_minimal() +
+  facet_wrap(~ city)
+ggplotly(p3)
+```
+
+
+
+## Wykres 4: Liczba mieszkań według liczby pokoi
+```{r}
+p4 <- ggplot(data, aes(x = as.factor(rooms))) +
+  geom_bar(fill = "orange", color = "black") +
+  labs(title = "Liczba mieszkań według liczby pokoi", x = "Liczba pokoi", y = "Liczba mieszkań") +
+  theme_minimal()
+ggplotly(p4)
+```
+
+
+## Wykres 5: Cena w zależności od stanu mieszkania
+```{r}
+p5 <- ggplot(data, aes(x = condition, y = price, fill = condition)) +
+  geom_boxplot(outlier.color = "red") +
+  labs(title = "Cena w zależności od stanu mieszkania", x = "Stan mieszkania", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p5)
+```
+
+
+## Wykres 6: Cena w zależności od piętra
+```{r}
+p6 <- ggplot(data, aes(x = as.factor(floor), y = price)) +
+  geom_boxplot(fill = "lightblue", outlier.color = "red") +
+  labs(title = "Cena w zależności od piętra", x = "Piętro", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p6)
+```
+
+
+## Wykres 7: Cena w zależności od liczby pięter w budynku
+```{r warning=FALSE}
+p7 <- ggplot(data, aes(x = as.factor(floorCount), y = price)) +
+  geom_boxplot(fill = "lightpink", outlier.color = "darkred") +
+  labs(title = "Cena w zależności od liczby pięter w budynku", x = "Liczba pięter", y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p7)
+```
+
+
+## Wykres 8: Cena w zależności od roku budowy
+```{r warning=FALSE}
+p8 <- ggplot(data, aes(x = buildYear, y = price)) +
+  geom_point(alpha = 0.6, color = "darkgreen") +
+  geom_smooth(method = "lm") +
+  labs(title = "Cena w zależności od roku budowy", 
+       x = "Rok budowy", 
+       y = "Cena (PLN)") +
+  theme_minimal()
+ggplotly(p8)
+```
+
+
+# Analiza opisowa
+## Obliczenie statystyk opisowych dla ceny mieszkania w zależności od miast, liczby pokoi oraz typu budynku
+
+## Tabela 1 Rozkład cen w zależności od liczby pokoi
+```{r warning=FALSE}
+data7 %>%
+  select(price, rooms) %>%
+  tbl_summary(
+    by = rooms,  # Grupowanie wg liczby pokoi
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 1. Rozkład cen wg liczby pokoi**") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) 
+
+```
+
+
+# Tabela 2. Rozkład cen w zależności od miejscowości
+```{r warning=FALSE}
+data7 %>%
+  select(price, city) %>%
+  tbl_summary(
+    by = city,  # Grupowanie wg miejscowości
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 2. Rozkład cen w zależności od miejscowości**") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))
+
+```
+
+
+# Tabela 3 Rozkład cen w zależności od typu mieszkania
+```{r warning=FALSE}
+data7 %>%
+  select(price, type) %>%
+  tbl_summary(
+    by = type,  # Grupowanie wg miejscowości
+    type = all_continuous() ~ "continuous2",  # Określenie typu zmiennej ciągłej
+    statistic = all_continuous() ~ c(
+      "{N_nonmiss}",  # Liczba niebrakujących wartości
+      "{mean}",        # Średnia
+      "{sd}",          # Odchylenie standardowe
+      "{median} ({p25}, {p75})",  # Mediana i kwartyle
+      "{min}, {max}"   # Minimalna i maksymalna wartość
+    ),
+    missing = "no",  # Brakujące dane ignorowane
+    label = price ~ "Cena"  # Zmiana nazwy etykiety dla kolumny 'price'
+  ) %>%
+  modify_header(label ~ "**Zmienna**") %>%  # Nagłówek dla etykiety zmiennej
+  modify_caption("**Tabela 3. Rozkład cen w zależności od typu **") %>%  # Nagłówek tabeli
+  bold_labels() %>%  # Pogrubienie etykiet
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))  
+```
