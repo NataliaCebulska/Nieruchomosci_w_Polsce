@@ -5,6 +5,9 @@ output:
   html_document:
     df_print: paged
   pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 ```{r setup, include=FALSE}
@@ -32,67 +35,71 @@ data
 
 # Wprowadzenie
 
-Rynek nieruchomości odgrywa kluczową rolę w gospodarce, zaspokajając równocześnie potrzeby mieszkaniowe jak i inwestycyjne. W naszej pracy przeanalizujemy dane dotyczące cen mieszkań z rynku pierwotnego w Polsce w czerwcu 2024. Analizę wykonamy za pomocą wyznaczania najważniejszych wskaźników statystycznych oraz wizualizacji na wykresach.  W pracy zostaną omówione główne czynniki wpływające na kształtowanie się cen nieruchomości, a także ich potencjalne skutki dla przyszłości rynku mieszkaniowego w Polsce. Analiza ta pozwoli określić występujące trendy i problemy kształtujące się na rynku mieszkaniowym. 
-
+Rynek nieruchomości odgrywa kluczową rolę w gospodarce, zaspokajając równocześnie potrzeby mieszkaniowe jak i inwestycyjne.
+W naszej pracy przeanalizujemy dane dotyczące cen mieszkań z rynku pierwotnego w Polsce w czerwcu 2024.
+Analizę wykonamy za pomocą wyznaczania najważniejszych wskaźników statystycznych oraz wizualizacji na wykresach.
+W pracy zostaną omówione główne czynniki wpływające na kształtowanie się cen nieruchomości, a także ich potencjalne skutki dla przyszłości rynku mieszkaniowego w Polsce.
+Analiza ta pozwoli określić występujące trendy i problemy kształtujące się na rynku mieszkaniowym.
 
 # Przygotowanie do data cleansing, data wrangling
 
 ## Wczytanie oraz wyświetlenie danych
-
 
 ```{r}
 data <- read_csv("apartments_pl_2024_06.csv")
 head(data)
 ```
 
-
 ## Sprawdzenie jakie mamy typy danych
+
 ```{r}
 glimpse(data)
 ```
 
-
 ## Sprawdzenie czy mamy prakujące obserwacje oraz ile ich jest
+
 ```{r}
 n_miss(data)
 ```
 
 Występują brakujące obserwacje.
 
-
 ## Sprawdzenie ile brakujących obserwacji jest w każdej kolumnie
+
 ```{r}
 miss_var_summary(data)
 ```
 
 Największe braki danych w kolumnach condition, buildingMaterial, type, floor oraz buildYear (w każdym powyżej 15%).
 
-
 ## Pokazanie ile jest brakujących obserwacji w wierszach
+
 ```{r}
 miss_case_table(data)
 ```
 
 Większość obserwacji ma od 1 do 3 braków, co pozwala na zastosowanie imputacji brakujących danych.
 
-
 ## Wizualizacja braków danych
+
 ```{r}
 vis_miss(data, cluster = TRUE, sort_miss = TRUE)
 ```
 
-Graficzne ukazanie, w których kolumnach mamy najwięcej brakujacych danych. Wykres potwierdza, że są to kolumny condition (74%), building material (41%), type (20%), floor (17%) oraz buildYear (16%)
-
+Graficzne ukazanie, w których kolumnach mamy najwięcej brakujacych danych.
+Wykres potwierdza, że są to kolumny condition (74%), building material (41%), type (20%), floor (17%) oraz buildYear (16%)
 
 ## Wykres przedstawiający wzorce braków danych
+
 ```{r}
 gg_miss_upset(data)
 ```
 
-Z wykresu możemy odczytać, że najwięcej braków danych występuje jedynie w kolumnie condition, bez współwystępowania braku w innych kolumnach. Większa liczba braków danych występuje też zależnie zarówno w kolumnie condition jak i buildingMaterial oraz w kolumnach condition, buildingMaterial i type.
-
+Z wykresu możemy odczytać, że najwięcej braków danych występuje jedynie w kolumnie condition, bez współwystępowania braku w innych kolumnach.
+Większa liczba braków danych występuje też zależnie zarówno w kolumnie condition jak i buildingMaterial oraz w kolumnach condition, buildingMaterial i type.
 
 ## Grupowanie braków według miasta
+
 ```{r}
 data %>% 
   group_by(city) %>% 
@@ -100,8 +107,8 @@ data %>%
   View(data)
 ```
 
-Nie ma istotnych różnic w brakach danych między miastami. We wszystkich największy odsetek brakujacych danych stanowi kolumna condition.
-
+Nie ma istotnych różnic w brakach danych między miastami.
+We wszystkich największy odsetek brakujacych danych stanowi kolumna condition.
 
 ## Sprawdzenie i analiza wartości odstających
 
@@ -121,9 +128,9 @@ combined_plots <- wykres1 + wykres2
 combined_plots
 ```
 
-Cena -> wartości odstające powyżej 2mln, do 3mln - brak podstaw do usuwania danych odstających, gdyż są to realne ceny za mieszkania.
+Cena -\> wartości odstające powyżej 2mln, do 3mln - brak podstaw do usuwania danych odstających, gdyż są to realne ceny za mieszkania.
 
-Metry kwadratowe -> wartości odstające do max 140m2 - mają sens.
+Metry kwadratowe -\> wartości odstające do max 140m2 - mają sens.
 
 ```{r warning=FALSE}
 library(ggplot2)
@@ -142,6 +149,7 @@ combined_plots <- wykres1 + wykres2
 combined_plots
 
 ```
+
 ```{r warning=FALSE}
 wykres3 <- ggplot(data, aes(y = floorCount)) +
   geom_boxplot(fill = "lightblue") +
@@ -156,11 +164,9 @@ combined_plots
 
 ```
 
+Pokoje, piętra oraz liczba pięter -\> niewielka liczba możliwych wartości odstających, piętro na którym jest mieszkanie nie przewyższa ogólnej liczby pięter.
 
-Pokoje, piętra oraz liczba pięter -> niewielka liczba możliwych wartości odstających, piętro na którym jest mieszkanie nie przewyższa ogólnej liczby pięter.
-
-Rok budowy -> wartości odstające poniżej roku 1900, lecz powyżej roku 1850 - mają sens
-
+Rok budowy -\> wartości odstające poniżej roku 1900, lecz powyżej roku 1850 - mają sens
 
 ```{r warning=FALSE}
 library(ggplot2)
@@ -212,18 +218,16 @@ combined_plots <- wykres7 + wykres8
 combined_plots
 ```
 
-
 Dużo wartości odstających w odległościach do różnych punktów usługowych, lecz poniżej 5km - wyniki mają sens.
 
 Na podstawie powyższej analizy, możemy stwierdzić, że pomimo występowania wartości odstających nie wyglądają one na błędy i nasze dane są spójne, brak konieczności usuwania danych odstających.
 
-
-
 # Imputacja danych
 
-1. Condition
+1.  Condition
 
- Z racji tego, że stan normalny zazwyczaj nie jest określany w ogłoszeniach nieruchomości (chcemy się pochwalić stanem premium lub zaznaczyć niski standard mieszkania), z logicznego punktu widzenia, możemy uzupełnić braki danych w tej kolumnie jako 'standard'.
+Z racji tego, że stan normalny zazwyczaj nie jest określany w ogłoszeniach nieruchomości (chcemy się pochwalić stanem premium lub zaznaczyć niski standard mieszkania), z logicznego punktu widzenia, możemy uzupełnić braki danych w tej kolumnie jako 'standard'.
+
 ```{r warning=FALSE}
 data1Condition <- data %>% 
   mutate(condition = ifelse(is.na(condition), "Standard", condition))
@@ -232,14 +236,13 @@ na_count_condition <- sum(is.na(data1Condition$condition))
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
 
+2.  Building Material
 
+Zmienna ta nie powinna mieć istotnego wpływu na cenę, kupujący zazwyczaj nie zwacają uwagi na aspekt materiałów użytych do budowy domu, w którym znajduje się mieszkanie.
+Aby zastąpić brakujące obserwacje użyjemy sformułowania "Material is not known/different building material".
 
-2. Building Material 
-
-Zmienna ta nie powinna mieć istotnego wpływu na cenę, kupujący zazwyczaj nie zwacają uwagi na aspekt materiałów użytych do budowy domu, w którym znajduje się mieszkanie. Aby zastąpić brakujące obserwacje użyjemy sformułowania "Material is not known/different building material".
 ```{r warning=FALSE}
 data2Condition.buildingMaterial <- data1Condition %>% 
   mutate(buildingMaterial = ifelse(is.na(buildingMaterial), "Material is not known/different building material", buildingMaterial))
@@ -248,14 +251,12 @@ na_count_condition <- sum(is.na(data2Condition.buildingMaterial$buildingMaterial
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
-
-
 
 3.Type
 
 Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza.
+
 ```{r warning=FALSE}
 dataCBT <- kNN(data2Condition.buildingMaterial,
                     variable = c("type"),        
@@ -267,14 +268,13 @@ na_count_condition <- sum(is.na(dataCBT$type))
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
 
+4.  Floor Count
 
+Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach.
+Do porównania zostały użyte zmienne city, type oraz condition.
 
-4. Floor Count 
-
-Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne city, type oraz condition.
 ```{r warning=FALSE}
 dataCBTFC <- dataCBT %>%
   group_by(city, type, condition) %>%  
@@ -285,14 +285,13 @@ na_count_condition <- sum(is.na(dataCBTFC$floorCount))
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
 
+5.Floor
 
+Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach.
+Do porównania zostały użyte zmienne floorCount oraz type.
 
-5.Floor 
-
-Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount oraz type.
 ```{r warning=FALSE}
 data2 <- dataCBTFC %>%
   group_by(floorCount, type) %>%
@@ -303,14 +302,13 @@ na_count_condition <- sum(is.na(data2$floor))
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
 
+6.  Build Year
 
+Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach.
+Do porównania zostały użyte zmienne floorCount, type, city.
 
-6. Build Year
-
-Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount, type, city.
 ```{r warning=FALSE}
 data3 <- data2 %>%
   group_by(floorCount, type, city) %>%
@@ -321,9 +319,7 @@ na_count_condition <- sum(is.na(data3$buildYear))
 print(na_count_condition)
 ```
 
-
 37 wartości NA, ponawiamy imputację danych za pomocą mediany, lecz tym razem dla całego zbioru danych (liczba brakujących obserwacji jest bardzo mała)
-
 
 ```{r warning=FALSE}
 data4 <- data3 %>%
@@ -334,14 +330,12 @@ na_count_condition <- sum(is.na(data4$buildYear))
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
-
-
 
 7.has Elevator
 
 Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza.
+
 ```{r warning=FALSE}
 data5 <- kNN(data4, 
                 variable = c("hasElevator"),
@@ -353,12 +347,9 @@ na_count_condition <- sum(is.na(data5$hasElevator))
 print(na_count_condition)
 ```
 
-
 Brak wartości NA
 
-
-
-8. Distance - college, clinic, restaurant, pharmacy, postoffice, kindergarten, school
+8.  Distance - college, clinic, restaurant, pharmacy, postoffice, kindergarten, school
 
 Mała liczba wartości NA, imputacja może być wyliczana na podstawie mediany dla wszystkich obserwacji.
 
@@ -398,16 +389,12 @@ data7 <- data6 %>%
 miss_var_summary(data7)
 ```
 
-
-
 **BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH**
-
-
 
 # Wizualizacja danych
 
-
 ## Wykres 1: Histogram cen mieszkań
+
 ```{r}
 p1 <- ggplot(data7, aes(x = price)) +
   geom_histogram(bins = 30, fill = "skyblue", color = "black") +
@@ -416,14 +403,14 @@ p1 <- ggplot(data7, aes(x = price)) +
 ggplotly(p1)
 ```
 
+1.  Prawostronna skośność rozkładu – większość mieszkań ma ceny skoncentrowane w niższych przedziałach cenowych natomiast pojedyncze, drogie mieszkania powodują wydłużenie się ogona rozkładu w prawą stronę.
 
-1.	Prawostronna skośność rozkładu – większość mieszkań ma ceny skoncentrowane w niższych przedziałach cenowych natomiast pojedyncze, drogie mieszkania powodują wydłużenie się ogona rozkładu w prawą stronę.
-
-2.	Największa liczba mieszkań ma ceny w przedziale od ok. 500 tys. zł do 1 mln zł. Liczba dostępnych mieszkań maleje wraz ze wzrostem ceny.
-
-
+2.  Największa liczba mieszkań ma ceny w przedziale od ok. 500 tys.
+    zł do 1 mln zł.
+    Liczba dostępnych mieszkań maleje wraz ze wzrostem ceny.
 
 ## Wykres 2: Scatter plot - Odległość od centrum vs cena
+
 ```{r}
 p2 <- ggplot(data7, aes(x = centreDistance, y = price)) +
   geom_point(alpha = 0.6, color = "blue") +
@@ -436,9 +423,8 @@ p2 <- ggplot(data7, aes(x = centreDistance, y = price)) +
 ggplotly(p2)
 ```
 
-
-
 ## Wykres 3: Cena w zależności od odległości od uczelni
+
 ```{r}
 p3 <- ggplot(data7, aes(x = collegeDistance, y = price)) +
   geom_point(alpha = 0.6, color = "purple") +
@@ -451,9 +437,8 @@ p3 <- ggplot(data7, aes(x = collegeDistance, y = price)) +
 ggplotly(p3)
 ```
 
-
-
 ## Wykres 4: Liczba mieszkań według liczby pokoi
+
 ```{r}
 p4 <- ggplot(data7, aes(x = as.factor(rooms))) +
   geom_bar(fill = "orange", color = "black") +
@@ -462,8 +447,8 @@ p4 <- ggplot(data7, aes(x = as.factor(rooms))) +
 ggplotly(p4)
 ```
 
-
 ## Wykres 5: Cena w zależności od stanu mieszkania
+
 ```{r}
 p5 <- ggplot(data7, aes(x = condition, y = price, fill = condition)) +
   geom_boxplot(outlier.color = "red") +
@@ -472,8 +457,8 @@ p5 <- ggplot(data7, aes(x = condition, y = price, fill = condition)) +
 ggplotly(p5)
 ```
 
-
 ## Wykres 6: Cena w zależności od piętra
+
 ```{r}
 p6 <- ggplot(data7, aes(x = as.factor(floor), y = price)) +
   geom_boxplot(fill = "lightblue", outlier.color = "red") +
@@ -482,8 +467,8 @@ p6 <- ggplot(data7, aes(x = as.factor(floor), y = price)) +
 ggplotly(p6)
 ```
 
-
 ## Wykres 7: Cena w zależności od liczby pięter w budynku
+
 ```{r warning=FALSE}
 p7 <- ggplot(data7, aes(x = as.factor(floorCount), y = price)) +
   geom_boxplot(fill = "lightpink", outlier.color = "darkred") +
@@ -492,8 +477,8 @@ p7 <- ggplot(data7, aes(x = as.factor(floorCount), y = price)) +
 ggplotly(p7)
 ```
 
-
 ## Wykres 8: Cena w zależności od roku budowy
+
 ```{r warning=FALSE}
 p8 <- ggplot(data7, aes(x = buildYear, y = price)) +
   geom_point(alpha = 0.6, color = "darkgreen") +
@@ -505,13 +490,12 @@ p8 <- ggplot(data7, aes(x = buildYear, y = price)) +
 ggplotly(p8)
 ```
 
-
-
 # Analiza opisowa
 
 Obliczenie statystyk opisowych dla ceny mieszkania w zależności od miast, liczby pokoi oraz typu budynku.
 
 ## Tabela 1 Rozkład cen w zależności od liczby pokoi
+
 ```{r warning=FALSE}
 library(cardx)
 data7 %>%
@@ -536,8 +520,26 @@ data7 %>%
 
 ```
 
+W przypadku rozkładu cen w zależności od liczby pokoi zauważyć można, że: ilość pokoi ma znaczenie na cenę mieszkania.
+W przypadku mieszkania w którym znajduje się jeden pokój w którym mieliśmy 1308 obserwacji średnia cena mieszkania wynosiła 504tys., odchylenie standardowe ceny mieściło się w granicy 161 tys.
+zł.
+Minimalna cena mieszkania to 191tys.
+zł., maksymalna 970tys.
+zł.
 
-# Tabela 2. Rozkład cen w zależności od miejscowości
+W przypadku mieszkania w którym znajdują się trzy pokoje, w którym mieliśmy 7842 obserwacje średnia cena mieszkania wynosiła 890tys., odchylenie standardowe ceny mieściło się w granicy 402 tys.
+zł.
+Minimalna cena mieszkania to 249tys.
+zł., maksymalna 3mln zł.
+
+W przypadku mieszkań w którym znajduje się 6 pokoi (największa ilość), mieliśmy tylko 141 obserwacji.
+Śednia cena mieszkania wynosiła 1864tys., odchylenie standardowe ceny mieściło się w granicy 697 tys.
+zł.
+Minimalna cena mieszkania to 550tys.
+zł., maksymalna 3mln zł.
+
+## Tabela 2 Rozkład cen w zależności od miejscowości
+
 ```{r warning=FALSE}
 data7 %>%
   select(price, city) %>%
@@ -561,8 +563,20 @@ data7 %>%
 
 ```
 
+W przypadku rozkładu cen w zależności od miejscowości warto zauważyć, że: średnie ceny mieszkań mniejsze niż 400tys zł znajdują się w Częstochowie oraz Radomiu.
+
+Najwyższe średnie mieszkań są w Warszawie, następnie Krakowie oraz Gdańsku i Gdyni.
+
+Odchylenie standardowe cen mieszkań najwyższe jest w Gdyni, Krakowie oraz Warszawie.
+
+Najniższe ceny minimalne mieszkań są w Białymstoku, Częstochowie, Katowicach, Łodzi oraz Radomiu.
+W przypadku cen maksymalnych najwyższe ceny są w Warszawie (3mln zł), Gdyni (2,8mln zł),Krakowie (2,79mln zł) oraz Gdańsku (2,499mln zł).
+
+Największa ilość ofert mieszkań znajduje się w Warszawie (6962) oraz Krakowie (3245), natomiast najmniejsza ilość ofert mieszkań znajduje się w Radomiu oraz Rzeszowie (poniżej 200) oraz Białymstoku (231).
+Wniosek jaki się nasuwa jest następujący mimo ogromnej liczby ofert mieszkań ceny są odpowiednio wysokie, w przypadku mniejszej ilosci ofert mieszkań łatwiej znaleźć oferty bardziej przystępne cenowo.
 
 # Tabela 3 Rozkład cen w zależności od typu mieszkania
+
 ```{r warning=FALSE}
 data7 %>%
   select(price, type) %>%
@@ -585,10 +599,23 @@ data7 %>%
   add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))  
 ```
 
+W zależności od typu mieszkania ceny maksymalne oraz minimalne kształtują się na zbliżonym poziomie: minimalne ok 200tys zł, maksymalne 3mln zł.
+
+W przypadku kamienic średnia cena mieszkań kształtuje się na poziomie ok 900tys zł.
+Odchylenie standardowe tej ceny to 538tys zł.
+Ilość mieszkań do zakupu to 3304.
+
+W przypadku mieszkań w bloku średnia cena mieszkań wynosi 738tys zł.
+Odchylenie standardowe wynosi 339tys zł.
+Najwięskza ilość dostępych mieszkań do zakupu (ponad 14,5 tys)
+
+W przypadku Apartment średnia cena mieszkań wynosi 1,1mln zł.
+Odchylenie rozkładu tej ceny to ponad 512 tys zł.
+Ilość oferty wynosi 3648.
+
 # Wnioskowanie statystyczne
 
 ## Sprawdzenie czy średnie ceny różnią się między miastami (test ANOVA)
-
 
 ```{r}
 anova_model <-aov(price ~ city, data = data7)
@@ -599,12 +626,11 @@ if(summary(anova_model)[[1]]$`Pr(>F)`[1]<0.05) {
   print(tukey_result)}
 ```
 
-
 W testach Tukeya większość dużych miast (Warszawa, Kraków, Gdańsk, Wrocław, Poznań) wykazuje istotnie wyższe ceny niż mniejsze ośrodki (Białystok, Częstochowa, Radom, Łódź).
 Największe różnice cenowe występują między Warszawą a mniejszymi miastami, takimi jak Białystok i Częstochowa.
 
-
 ## Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
+
 ```{r}
 anova_type <- aov(price ~ type, data = data7)
 summary(anova_type)
@@ -612,23 +638,18 @@ summary(anova_type)
 
 Istnieją istotne różnice w cenach mieszkań.
 
-
-
-## Przeprowadzenie testu Tukeya w celu określenia, które pary typów mieszkań mają istotne różnice w cenach. 
+## Przeprowadzenie testu Tukeya w celu określenia, które pary typów mieszkań mają istotne różnice w cenach.
 
 ```{r}
 tukey_result <- TukeyHSD(anova_model)
 print(tukey_result)
 ```
 
-
 Test Tukeya potwierdza głębokie zróżnicowanie cen mieszkań w Polsce.
 Najwyższe ceny występują w dużych aglomeracjach, podczas gdy mniejsze miasta pozostają znacznie tańsze.
-Miasta o najwyższych cenach mieszkań: Warszawa, Kraków, Gdańsk, Wrocław i Poznań mają istotnie wyższe
-ceny mieszkań w porównaniu z większością innych miast (np. różnice sięgające nawet 500 000 PLN).
-Przykład: warszawa-bialystok: różnica +541 443 PLN (p < 0.0001). krakow-bialystok: różnica +430 477 PLN (p < 0.0001).
-
-
+Miasta o najwyższych cenach mieszkań: Warszawa, Kraków, Gdańsk, Wrocław i Poznań mają istotnie wyższe ceny mieszkań w porównaniu z większością innych miast (np. różnice sięgające nawet 500 000 PLN).
+Przykład: warszawa-bialystok: różnica +541 443 PLN (p \< 0.0001).
+krakow-bialystok: różnica +430 477 PLN (p \< 0.0001).
 
 ## Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
 
@@ -642,56 +663,46 @@ if (summary(anova_type)[[1]]$`Pr(>F)`[1] < 0.05) {
 }
 ```
 
-
-
 Apartamentowce wymagają większego kapitału, bloki mieszkalne są bardziej przystępne cenowo, a kamienice stanowią pośrednią opcję.
 Porównanie: blok mieszkalny vs apartamentowiec: Bloki mieszkalne są średnio o 365 815 zł tańsze niż apartamentowce.
 Porównanie: kamienica vs apartamentowiec: Kamienice są średnio o 211 115 zł tańsze niż apartamentowce.
 Porównanie: kamienica vs blok mieszkalny: Kamienice są średnio o 154 701 zł droższe niż bloki mieszkalne.
 
-
 ### Korelacja między ceną a odległością od uczelni
+
 ```{r}
 cor_test_college <- cor.test(data7$price, data7$collegeDistance, method = "pearson")
 print(cor_test_college)
 ```
 
-
 Bliskość uczelni nie jest istotnym czynnikiem kształtującym ceny mieszkań.
 
-
 ### Korelacja między ceną a odległością od centrum
+
 ```{r}
 cor_test_centre <- cor.test(data7$price, data7$centreDistance, method = "pearson")
 print(cor_test_centre)
 ```
 
-
 Odległość od centrum ma bardzo niewielki wpływ na ceny mieszkań.
 
-
-
 ### Korelacja między ceną a rokiem budowy
+
 ```{r}
 cor_test_buildYear <- cor.test(data7$price, data7$buildYear, method = "pearson")
 print(cor_test_buildYear)
 ```
 
-
 Nowsze budynki mają tendencję do wyższych cen
 
-
-
 ## Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między stanami mieszkań
+
 ```{r}
 anova_condition <- aov(price ~ condition, data = data7)
 summary(anova_condition)
 ```
 
-
 Stan mieszkania ma znaczący wpływ na cenę.
-
-
 
 ```{r}
 if (summary(anova_condition)[[1]]$`Pr(>F)`[1] < 0.05) {
@@ -705,22 +716,18 @@ ggplot(data7, aes(x = condition, y = price, fill = condition)) +
   theme_minimal()
 ```
 
-
-Średnie ceny mieszkań znacząco różnią się w zależności od stanu mieszkania:
-Mieszkania w stanie premium mają najwyższe średnie ceny.
+Średnie ceny mieszkań znacząco różnią się w zależności od stanu mieszkania: Mieszkania w stanie premium mają najwyższe średnie ceny.
 Mieszkania w stanie Standard są droższe niż w stanie low, ale tańsze niż premium.
 Stan low wiąże się z najniższymi średnimi cenami mieszkań.
 
-
-
 ## Tworzenie tabeli kontyngencji dla miasta i typu mieszkania
+
 ```{r}
 contingency_table <- table(data7$city, data7$type)
 ```
 
-
-
 ## Przeprowadzenie testu Chi-kwadrat
+
 ```{r}
 chi_square_result <- chisq.test(contingency_table)
 print(chi_square_result)
@@ -728,21 +735,17 @@ print(chi_square_result$expected)
 mosaicplot(contingency_table, main = "Mozaikowy wykres zależności", color = TRUE, las = 3)
 ```
 
-
-
 ## Przeprowadzenie testu t-Studenta, aby porównać ceny mieszkań z windą i bez windy
+
 ```{r}
 t_test_elevator <- t.test(price ~ hasElevator, data = data7)
 print(t_test_elevator)
 ```
 
-
-Wyniki testu wskazują, że obecność windy ma istotny wpływ na cenę mieszkań. 
+Wyniki testu wskazują, że obecność windy ma istotny wpływ na cenę mieszkań.
 Mieszkania z windą są średnio droższe od mieszkań bez windy o około 177 000 PLN.
-Może to wynikać z faktu, że winda jest istotnym udogodnieniem, szczególnie w budynkach 
-wielopiętrowych. Wpływa na postrzeganą wartość nieruchomości.
-
-
+Może to wynikać z faktu, że winda jest istotnym udogodnieniem, szczególnie w budynkach wielopiętrowych.
+Wpływa na postrzeganą wartość nieruchomości.
 
 ```{r}
 ggplot(data7, aes(x = hasElevator, y = price, fill = hasElevator)) +
@@ -753,29 +756,20 @@ ggplot(data7, aes(x = hasElevator, y = price, fill = hasElevator)) +
   theme_minimal()
 ```
 
-
-
 ## Test Kruskala-Wallisa do porównania cen między miastami
+
 ```{r}
 kruskal_result <- kruskal.test(price ~ city, data = data7)
 print(kruskal_result)
 ```
 
-
-
-Wyniki testu Kruskala-Wallisa wskazują, że istnieją statystycznie istotne 
-różnice w rozkładach cen mieszkań między miastami.
-
+Wyniki testu Kruskala-Wallisa wskazują, że istnieją statystycznie istotne różnice w rozkładach cen mieszkań między miastami.
 
 ```{r}
 pairwise.wilcox.test(data7$price, data7$city, p.adjust.method = "bonferroni")
 ```
 
-
-Większość miast różni się istotnie pod względem median cen mieszkań, co wskazuje 
-na zróżnicowany rynek nieruchomości w zależności od lokalizacji.
-
-
+Większość miast różni się istotnie pod względem median cen mieszkań, co wskazuje na zróżnicowany rynek nieruchomości w zależności od lokalizacji.
 
 ```{r}
 ggplot(data7, aes(x = city, y = price, fill = city)) +
@@ -786,10 +780,7 @@ ggplot(data7, aes(x = city, y = price, fill = city)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-
-
 ## Wykorzystanie pakietu ggstatsplot
-
 
 ```{r}
 library(ggstatsplot)
@@ -819,27 +810,25 @@ ggbetweenstats(
   scale_fill_brewer(palette = "Set2")
 ```
 
-
-
 ## Dodanie testów zgodności rozkładu
+
 ```{r}
 library(nortest)
 lillie.test(data7$price) 
 ```
 
-
-
 ## Analiza wielowymiarowa – rozszerzenie modelu regresji
+
 ```{r}
 lm_interaction <- lm(price ~ rooms * buildYear, data = data7)
 summary(lm_interaction)
 plot(lm_interaction)
 ```
 
-
-
 ## Przykłady rozszerzonych analiz i wizualizacji
+
 ## Porównanie odległości od uczelni i od centrum w kontekście cen mieszkań
+
 ```{r}
 ggscatterstats(
   data = data7,
