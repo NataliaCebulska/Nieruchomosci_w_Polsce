@@ -252,10 +252,6 @@ miss_var_summary(data7)
 
 #BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH
 
-
-# Filtrowanie danych - tylko sprzedaż mieszkań
-data <- data %>% filter(type == "apartmentBuilding" | type == "blockOfFlats")
-
 # Wykres 1: Histogram cen mieszkań
 p1 <- ggplot(data, aes(x = price)) +
   geom_histogram(bins = 30, fill = "skyblue", color = "black") +
@@ -272,6 +268,7 @@ p2 <- ggplot(data, aes(x = centreDistance, y = price)) +
        y = "Cena (PLN)") +
   theme_minimal() +
   facet_wrap(~ city)
+ggplotly(p2)
 
 # Wykres 3: Cena w zależności od odległości od uczelni
 p3 <- ggplot(data, aes(x = collegeDistance, y = price)) +

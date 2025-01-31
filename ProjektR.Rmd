@@ -403,13 +403,13 @@ p1 <- ggplot(data7, aes(x = price)) +
 ggplotly(p1)
 ```
 
-1.  Prawostronna skośność rozkładu – większość mieszkań ma ceny skoncentrowane w niższych przedziałach cenowych natomiast pojedyncze, drogie mieszkania powodują wydłużenie się ogona rozkładu w prawą stronę.
+1.  Prawostronna skośność rozkładu – większość mieszkań ma ceny skoncentrowane w niższych przedziałach cenowych        natomiast pojedyncze, drogie mieszkania powodują wydłużenie się ogona rozkładu w prawą stronę.
 
 2.  Największa liczba mieszkań ma ceny w przedziale od ok. 500 tys.
     zł do 1 mln zł.
     Liczba dostępnych mieszkań maleje wraz ze wzrostem ceny.
 
-## Wykres 2: Scatter plot - Odległość od centrum vs cena
+## Wykres 2: Odległość od centrum vs cena
 
 ```{r}
 p2 <- ggplot(data7, aes(x = centreDistance, y = price)) +
@@ -422,6 +422,11 @@ p2 <- ggplot(data7, aes(x = centreDistance, y = price)) +
   facet_wrap(~ city)
 ggplotly(p2)
 ```
+
+1.  Widoczna jest ogólna tendencja spadku cen mieszkań wraz ze wzrostem odległości od centrum miasta.
+    Ceny mieszkań są najwyższe w centralnych lokalizacjach, a następnie stopniowo maleją.
+
+2.  W miastach takich jak Białystok, Częstochowa, Łódź czy Lublin zależność ta może się różnić. Najbardziej            natomiast uwydatnia się w największych miastach, czyli Warszawie, Gdańsku i Gdyni.
 
 ## Wykres 3: Cena w zależności od odległości od uczelni
 
@@ -437,6 +442,9 @@ p3 <- ggplot(data7, aes(x = collegeDistance, y = price)) +
 ggplotly(p3)
 ```
 
+1.  Ceny mieszkań przeciętnie są tym wyższe, im bliżej uczelni znajduje się jego lokalizacja. Najlepiej tę             zależność widać w największych miastach: Gdańsk, Warszawa, Kraków.
+2.  Różnice w cenach mogą wynikać z charakterystyki poszczególnych miast oraz znaczenia uczelni dla lokalnego rynku     nieruchomości.
+
 ## Wykres 4: Liczba mieszkań według liczby pokoi
 
 ```{r}
@@ -446,6 +454,9 @@ p4 <- ggplot(data7, aes(x = as.factor(rooms))) +
   theme_minimal()
 ggplotly(p4)
 ```
+
+1.  Najliczniejsza grupa mieszkań to mieszkania 2 i 3 pokojowe.
+2.  Mieszkania posiadające 1, 5 oraz 6 pokoi występują najrzadziej.
 
 ## Wykres 5: Cena w zależności od stanu mieszkania
 
@@ -457,6 +468,8 @@ p5 <- ggplot(data7, aes(x = condition, y = price, fill = condition)) +
 ggplotly(p5)
 ```
 
+1.  Średnie ceny mieszkań różnią się w zależności od ich stanu – mieszkania w lepszym stanie (premium) są droższe      średnio o 170 000 złotych.
+
 ## Wykres 6: Cena w zależności od piętra
 
 ```{r}
@@ -467,6 +480,10 @@ p6 <- ggplot(data7, aes(x = as.factor(floor), y = price)) +
 ggplotly(p6)
 ```
 
+1.  Ceny mieszkań znacząco różnią się w zależności od piętra, na którym się znajdują.
+    Droższe mieszkania znajdują się na wyższych piętrach, co może wynikać z lepszego widoku oraz większej              prywatności.
+2.  Ceny mieszkań na piętrach od 1 do 10 utrzymują się na stosunkowo podobnym poziomie.
+
 ## Wykres 7: Cena w zależności od liczby pięter w budynku
 
 ```{r warning=FALSE}
@@ -476,6 +493,10 @@ p7 <- ggplot(data7, aes(x = as.factor(floorCount), y = price)) +
   theme_minimal()
 ggplotly(p7)
 ```
+
+  1.  Wysokość budynku ma wpływ na cenę mieszkań – w budynkach o większej liczbie pięter ceny mieszkań są wyższe.
+  2.  W budynkach o liczbie pięter od 1 do 10 ceny są bardziej zróżnicowane, co może wynikać z różnych standardów        budownictwa.
+  3.  Możliwe jest także, że wyższe budynki znajdują się w bardziej prestiżowych lokalizacjach, co podnosi wartość       mieszkań.
 
 ## Wykres 8: Cena w zależności od roku budowy
 
@@ -489,6 +510,10 @@ p8 <- ggplot(data7, aes(x = buildYear, y = price)) +
   theme_minimal()
 ggplotly(p8)
 ```
+
+  1.  Widoczna jest tendencja wzrostu cen mieszkań w nowszych budynkach, co może wynikać z ich lepszego standardu.
+  2.  Mieszkania w starszych budynkacj również potrafią mieć wysokie ceny, jeśli znajdują się w atrakcyjnej              lokalizacji lub są po renowacjach.
+  3.  Mieszkania w najstarszych budynkach (wybudowanych przed 1900 rokiem) mają najniższe ceny, co może wynikać z        niższego standardu lub konieczności przeprowadzenia remontu.
 
 # Analiza opisowa
 
