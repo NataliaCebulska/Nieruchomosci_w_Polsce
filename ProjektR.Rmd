@@ -11,6 +11,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(tufte)
 library(tidyverse)
 library(dplyr)
@@ -36,7 +37,7 @@ data
 # Wprowadzenie
 
 Rynek nieruchomości odgrywa kluczową rolę w gospodarce, zaspokajając równocześnie potrzeby mieszkaniowe jak i inwestycyjne.
-W naszej pracy przeanalizujemy dane dotyczące cen mieszkań z rynku pierwotnego w Polsce w czerwcu 2024.
+W naszej pracy przeanalizujemy dane dotyczące cen mieszkań w Polsce w czerwcu 2024.
 Analizę wykonamy za pomocą wyznaczania najważniejszych wskaźników statystycznych oraz wizualizacji na wykresach.
 W pracy zostaną omówione główne czynniki wpływające na kształtowanie się cen nieruchomości, a także ich potencjalne skutki dla przyszłości rynku mieszkaniowego w Polsce.
 Analiza ta pozwoli określić występujące trendy i problemy kształtujące się na rynku mieszkaniowym.
@@ -87,7 +88,7 @@ vis_miss(data, cluster = TRUE, sort_miss = TRUE)
 ```
 
 Graficzne ukazanie, w których kolumnach mamy najwięcej brakujacych danych.
-Wykres potwierdza, że są to kolumny condition (74%), building material (41%), type (20%), floor (17%) oraz buildYear (16%)
+Wykres potwierdza, że są to kolumny condition (74%), building material (41%), type (20%), floor (17%) oraz buildYear (16%).
 
 ## Wykres przedstawiający wzorce braków danych
 
@@ -104,7 +105,7 @@ Większa liczba braków danych występuje też zależnie zarówno w kolumnie con
 data %>% 
   group_by(city) %>% 
   miss_var_summary() %>% 
-  View(data)
+  View()
 ```
 
 Nie ma istotnych różnic w brakach danych między miastami.
@@ -224,6 +225,7 @@ Na podstawie powyższej analizy, możemy stwierdzić, że pomimo występowania w
 
 # Imputacja danych
 
+
 1.  Condition
 
 Z racji tego, że stan normalny zazwyczaj nie jest określany w ogłoszeniach nieruchomości (chcemy się pochwalić stanem premium lub zaznaczyć niski standard mieszkania), z logicznego punktu widzenia, możemy uzupełnić braki danych w tej kolumnie jako 'standard'.
@@ -237,6 +239,8 @@ print(na_count_condition)
 ```
 
 Brak wartości NA
+
+
 
 2.  Building Material
 
@@ -252,6 +256,8 @@ print(na_count_condition)
 ```
 
 Brak wartości NA
+
+
 
 3.Type
 
@@ -270,6 +276,8 @@ print(na_count_condition)
 
 Brak wartości NA
 
+
+
 4.  Floor Count
 
 Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach.
@@ -286,6 +294,8 @@ print(na_count_condition)
 ```
 
 Brak wartości NA
+
+
 
 5.Floor
 
@@ -304,6 +314,8 @@ print(na_count_condition)
 
 Brak wartości NA
 
+
+
 6.  Build Year
 
 Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach.
@@ -319,7 +331,9 @@ na_count_condition <- sum(is.na(data3$buildYear))
 print(na_count_condition)
 ```
 
-37 wartości NA, ponawiamy imputację danych za pomocą mediany, lecz tym razem dla całego zbioru danych (liczba brakujących obserwacji jest bardzo mała)
+
+37 wartości NA, ponawiamy imputację danych za pomocą mediany, lecz tym razem dla całego zbioru danych (liczba brakujących obserwacji jest bardzo mała).
+
 
 ```{r warning=FALSE}
 data4 <- data3 %>%
@@ -331,6 +345,8 @@ print(na_count_condition)
 ```
 
 Brak wartości NA
+
+
 
 7.has Elevator
 
@@ -348,6 +364,8 @@ print(na_count_condition)
 ```
 
 Brak wartości NA
+
+
 
 8.  Distance - college, clinic, restaurant, pharmacy, postoffice, kindergarten, school
 
@@ -389,7 +407,10 @@ data7 <- data6 %>%
 miss_var_summary(data7)
 ```
 
+
 **BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH**
+
+
 
 # Wizualizacja danych
 
@@ -426,7 +447,7 @@ ggplotly(p2)
 1.  Widoczna jest ogólna tendencja spadku cen mieszkań wraz ze wzrostem odległości od centrum miasta.
     Ceny mieszkań są najwyższe w centralnych lokalizacjach, a następnie stopniowo maleją.
 
-2.  W miastach takich jak Białystok, Częstochowa, Łódź czy Lublin zależność ta może się różnić. Najbardziej            natomiast uwydatnia się w największych miastach, czyli Warszawie, Gdańsku i Gdyni.
+2.  W miastach takich jak Białystok, Częstochowa, Łódź czy Lublin zależność ta może się różnić. Najbardziej natomiast uwydatnia się w największych miastach, czyli Warszawie, Gdańsku i Gdyni.
 
 ## Wykres 3: Cena w zależności od odległości od uczelni
 
@@ -442,8 +463,8 @@ p3 <- ggplot(data7, aes(x = collegeDistance, y = price)) +
 ggplotly(p3)
 ```
 
-1.  Ceny mieszkań przeciętnie są tym wyższe, im bliżej uczelni znajduje się jego lokalizacja. Najlepiej tę             zależność widać w największych miastach: Gdańsk, Warszawa, Kraków.
-2.  Różnice w cenach mogą wynikać z charakterystyki poszczególnych miast oraz znaczenia uczelni dla lokalnego rynku     nieruchomości.
+1.  Ceny mieszkań przeciętnie są tym wyższe, im bliżej uczelni znajduje się jego lokalizacja. Najlepiej tę zależność widać w największych miastach: Gdańsk, Warszawa, Kraków.
+2.  Różnice w cenach mogą wynikać z charakterystyki poszczególnych miast oraz znaczenia uczelni dla lokalnego rynku nieruchomości.
 
 ## Wykres 4: Liczba mieszkań według liczby pokoi
 
@@ -468,7 +489,7 @@ p5 <- ggplot(data7, aes(x = condition, y = price, fill = condition)) +
 ggplotly(p5)
 ```
 
-1.  Średnie ceny mieszkań różnią się w zależności od ich stanu – mieszkania w lepszym stanie (premium) są droższe      średnio o 170 000 złotych.
+1.  Średnie ceny mieszkań różnią się w zależności od ich stanu – mieszkania w lepszym stanie (premium) są droższe średnio o 170 000 złotych.
 
 ## Wykres 6: Cena w zależności od piętra
 
@@ -481,7 +502,7 @@ ggplotly(p6)
 ```
 
 1.  Ceny mieszkań znacząco różnią się w zależności od piętra, na którym się znajdują.
-    Droższe mieszkania znajdują się na wyższych piętrach, co może wynikać z lepszego widoku oraz większej              prywatności.
+    Droższe mieszkania znajdują się na wyższych piętrach, co może wynikać z lepszego widoku oraz większej prywatności.
 2.  Ceny mieszkań na piętrach od 1 do 10 utrzymują się na stosunkowo podobnym poziomie.
 
 ## Wykres 7: Cena w zależności od liczby pięter w budynku
@@ -495,8 +516,8 @@ ggplotly(p7)
 ```
 
   1.  Wysokość budynku ma wpływ na cenę mieszkań – w budynkach o większej liczbie pięter ceny mieszkań są wyższe.
-  2.  W budynkach o liczbie pięter od 1 do 10 ceny są bardziej zróżnicowane, co może wynikać z różnych standardów        budownictwa.
-  3.  Możliwe jest także, że wyższe budynki znajdują się w bardziej prestiżowych lokalizacjach, co podnosi wartość       mieszkań.
+  2.  W budynkach o liczbie pięter od 1 do 10 ceny są bardziej zróżnicowane, co może wynikać z różnych standardów budownictwa.
+  3.  Możliwe jest także, że wyższe budynki znajdują się w bardziej prestiżowych lokalizacjach, co podnosi wartość mieszkań.
 
 ## Wykres 8: Cena w zależności od roku budowy
 
@@ -512,14 +533,15 @@ ggplotly(p8)
 ```
 
   1.  Widoczna jest tendencja wzrostu cen mieszkań w nowszych budynkach, co może wynikać z ich lepszego standardu.
-  2.  Mieszkania w starszych budynkacj również potrafią mieć wysokie ceny, jeśli znajdują się w atrakcyjnej              lokalizacji lub są po renowacjach.
-  3.  Mieszkania w najstarszych budynkach (wybudowanych przed 1900 rokiem) mają najniższe ceny, co może wynikać z        niższego standardu lub konieczności przeprowadzenia remontu.
+  2.  Mieszkania w starszych budynkach również potrafią mieć wysokie ceny, jeśli znajdują się w atrakcyjnej lokalizacji lub są po renowacjach.
+  3.  Mieszkania w najstarszych budynkach (wybudowanych przed 1900 rokiem) mają najniższe ceny, co może wynikać z niższego standardu lub konieczności przeprowadzenia remontu.
 
 # Analiza opisowa
 
+
 Obliczenie statystyk opisowych dla ceny mieszkania w zależności od miast, liczby pokoi oraz typu budynku.
 
-## Tabela 1 Rozkład cen w zależności od liczby pokoi
+## Tabela 1 -  Rozkład cen w zależności od liczby pokoi
 
 ```{r warning=FALSE}
 library(cardx)
@@ -545,25 +567,20 @@ data7 %>%
 
 ```
 
-W przypadku rozkładu cen w zależności od liczby pokoi zauważyć można, że: ilość pokoi ma znaczenie na cenę mieszkania.
-W przypadku mieszkania w którym znajduje się jeden pokój w którym mieliśmy 1308 obserwacji średnia cena mieszkania wynosiła 504tys., odchylenie standardowe ceny mieściło się w granicy 161 tys.
-zł.
-Minimalna cena mieszkania to 191tys.
-zł., maksymalna 970tys.
-zł.
+W przypadku rozkładu cen w zależności od liczby pokoi zauważyć można, że: ilość pokoi ma wpływ na cenę mieszkania.
+W przypadku mieszkania w którym znajduje się jeden pokój (1308 obserwacji), średnia cena mieszkania wynosiła 504tys.Odchylenie standardowe ceny mieściło się w granicy 161 tys.zł.
+Minimalna cena mieszkania to 191tys.zł., maksymalna 970tys.zł.
 
-W przypadku mieszkania w którym znajdują się trzy pokoje, w którym mieliśmy 7842 obserwacje średnia cena mieszkania wynosiła 890tys., odchylenie standardowe ceny mieściło się w granicy 402 tys.
-zł.
-Minimalna cena mieszkania to 249tys.
-zł., maksymalna 3mln zł.
+W przypadku mieszkania w którym znajdują się trzy pokoje, (7842 obserwacje) średnia cena mieszkania wynosiła 890tys., odchylenie standardowe ceny mieściło się w granicy 402 tys.zł.
+Minimalna cena mieszkania to 249 tys.zł., maksymalna 3 mln zł.
 
-W przypadku mieszkań w którym znajduje się 6 pokoi (największa ilość), mieliśmy tylko 141 obserwacji.
-Śednia cena mieszkania wynosiła 1864tys., odchylenie standardowe ceny mieściło się w granicy 697 tys.
-zł.
-Minimalna cena mieszkania to 550tys.
-zł., maksymalna 3mln zł.
+W przypadku mieszkań w którym znajduje się 6 pokoi (największa liczba pokoi), mieliśmy tylko 141 obserwacji.
+Średnia cena mieszkania wynosiła 1,864 mln., odchylenie standardowe ceny mieściło się w granicy 697 tys.zł.
+Minimalna cena mieszkania to 550 tys.zł., maksymalna 3mln zł.
 
-## Tabela 2 Rozkład cen w zależności od miejscowości
+
+
+## Tabela 2 -  Rozkład cen w zależności od miejscowości
 
 ```{r warning=FALSE}
 data7 %>%
@@ -588,19 +605,20 @@ data7 %>%
 
 ```
 
-W przypadku rozkładu cen w zależności od miejscowości warto zauważyć, że: średnie ceny mieszkań mniejsze niż 400tys zł znajdują się w Częstochowie oraz Radomiu.
+W przypadku rozkładu cen w zależności od miejscowości warto zauważyć, że: średnie ceny mieszkań mniejsze niż 400tys zł znajdują się w Białymstoku, Częstochowie, Rzeszowie oraz Radomiu.
 
 Najwyższe średnie mieszkań są w Warszawie, następnie Krakowie oraz Gdańsku i Gdyni.
 
 Odchylenie standardowe cen mieszkań najwyższe jest w Gdyni, Krakowie oraz Warszawie.
 
 Najniższe ceny minimalne mieszkań są w Białymstoku, Częstochowie, Katowicach, Łodzi oraz Radomiu.
-W przypadku cen maksymalnych najwyższe ceny są w Warszawie (3mln zł), Gdyni (2,8mln zł),Krakowie (2,79mln zł) oraz Gdańsku (2,499mln zł).
+W przypadku cen maksymalnych najwyższe ceny są w Warszawie (3mln zł), Gdyni (2,8mln zł),Krakowie (2,79 mln zł) oraz Gdańsku (2,499 mln zł).
 
 Największa ilość ofert mieszkań znajduje się w Warszawie (6962) oraz Krakowie (3245), natomiast najmniejsza ilość ofert mieszkań znajduje się w Radomiu oraz Rzeszowie (poniżej 200) oraz Białymstoku (231).
-Wniosek jaki się nasuwa jest następujący mimo ogromnej liczby ofert mieszkań ceny są odpowiednio wysokie, w przypadku mniejszej ilosci ofert mieszkań łatwiej znaleźć oferty bardziej przystępne cenowo.
 
-# Tabela 3 Rozkład cen w zależności od typu mieszkania
+
+
+# Tabela 3 - Rozkład cen w zależności od typu mieszkania
 
 ```{r warning=FALSE}
 data7 %>%
@@ -624,7 +642,7 @@ data7 %>%
   add_p(pvalue_fun = ~style_pvalue(.x, digits = 2))  
 ```
 
-W zależności od typu mieszkania ceny maksymalne oraz minimalne kształtują się na zbliżonym poziomie: minimalne ok 200tys zł, maksymalne 3mln zł.
+W zależności od typu mieszkania ceny maksymalne oraz minimalne kształtują się na zbliżonym poziomie: minimalne ok. 200tys zł, maksymalne 3mln zł.
 
 W przypadku kamienic średnia cena mieszkań kształtuje się na poziomie ok 900tys zł.
 Odchylenie standardowe tej ceny to 538tys zł.
@@ -632,13 +650,16 @@ Ilość mieszkań do zakupu to 3304.
 
 W przypadku mieszkań w bloku średnia cena mieszkań wynosi 738tys zł.
 Odchylenie standardowe wynosi 339tys zł.
-Najwięskza ilość dostępych mieszkań do zakupu (ponad 14,5 tys)
+Najwięskza ilość dostępych mieszkań do zakupu (ponad 14,5 tys.).
 
-W przypadku Apartment średnia cena mieszkań wynosi 1,1mln zł.
+W przypadku apartamentów średnia cena mieszkań wynosi 1,1mln zł.
 Odchylenie rozkładu tej ceny to ponad 512 tys zł.
 Ilość oferty wynosi 3648.
 
+
+
 # Wnioskowanie statystyczne
+
 
 ## Sprawdzenie czy średnie ceny różnią się między miastami (test ANOVA)
 
@@ -654,6 +675,8 @@ if(summary(anova_model)[[1]]$`Pr(>F)`[1]<0.05) {
 W testach Tukeya większość dużych miast (Warszawa, Kraków, Gdańsk, Wrocław, Poznań) wykazuje istotnie wyższe ceny niż mniejsze ośrodki (Białystok, Częstochowa, Radom, Łódź).
 Największe różnice cenowe występują między Warszawą a mniejszymi miastami, takimi jak Białystok i Częstochowa.
 
+
+
 ## Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
 
 ```{r}
@@ -662,6 +685,8 @@ summary(anova_type)
 ```
 
 Istnieją istotne różnice w cenach mieszkań.
+
+
 
 ## Przeprowadzenie testu Tukeya w celu określenia, które pary typów mieszkań mają istotne różnice w cenach.
 
@@ -675,6 +700,8 @@ Najwyższe ceny występują w dużych aglomeracjach, podczas gdy mniejsze miasta
 Miasta o najwyższych cenach mieszkań: Warszawa, Kraków, Gdańsk, Wrocław i Poznań mają istotnie wyższe ceny mieszkań w porównaniu z większością innych miast (np. różnice sięgające nawet 500 000 PLN).
 Przykład: warszawa-bialystok: różnica +541 443 PLN (p \< 0.0001).
 krakow-bialystok: różnica +430 477 PLN (p \< 0.0001).
+
+
 
 ## Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
 
@@ -693,6 +720,8 @@ Porównanie: blok mieszkalny vs apartamentowiec: Bloki mieszkalne są średnio o
 Porównanie: kamienica vs apartamentowiec: Kamienice są średnio o 211 115 zł tańsze niż apartamentowce.
 Porównanie: kamienica vs blok mieszkalny: Kamienice są średnio o 154 701 zł droższe niż bloki mieszkalne.
 
+
+
 ### Korelacja między ceną a odległością od uczelni
 
 ```{r}
@@ -701,6 +730,8 @@ print(cor_test_college)
 ```
 
 Bliskość uczelni nie jest istotnym czynnikiem kształtującym ceny mieszkań.
+
+
 
 ### Korelacja między ceną a odległością od centrum
 
@@ -711,6 +742,8 @@ print(cor_test_centre)
 
 Odległość od centrum ma bardzo niewielki wpływ na ceny mieszkań.
 
+
+
 ### Korelacja między ceną a rokiem budowy
 
 ```{r}
@@ -718,7 +751,9 @@ cor_test_buildYear <- cor.test(data7$price, data7$buildYear, method = "pearson")
 print(cor_test_buildYear)
 ```
 
-Nowsze budynki mają tendencję do wyższych cen
+Nowsze budynki mają tendencję do wyższych cen.
+
+
 
 ## Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między stanami mieszkań
 
@@ -745,11 +780,15 @@ ggplot(data7, aes(x = condition, y = price, fill = condition)) +
 Mieszkania w stanie Standard są droższe niż w stanie low, ale tańsze niż premium.
 Stan low wiąże się z najniższymi średnimi cenami mieszkań.
 
+
+
 ## Tworzenie tabeli kontyngencji dla miasta i typu mieszkania
 
 ```{r}
 contingency_table <- table(data7$city, data7$type)
 ```
+
+
 
 ## Przeprowadzenie testu Chi-kwadrat
 
@@ -759,6 +798,8 @@ print(chi_square_result)
 print(chi_square_result$expected)
 mosaicplot(contingency_table, main = "Mozaikowy wykres zależności", color = TRUE, las = 3)
 ```
+
+
 
 ## Przeprowadzenie testu t-Studenta, aby porównać ceny mieszkań z windą i bez windy
 
@@ -781,6 +822,8 @@ ggplot(data7, aes(x = hasElevator, y = price, fill = hasElevator)) +
   theme_minimal()
 ```
 
+
+
 ## Test Kruskala-Wallisa do porównania cen między miastami
 
 ```{r}
@@ -798,12 +841,14 @@ Większość miast różni się istotnie pod względem median cen mieszkań, co 
 
 ```{r}
 ggplot(data7, aes(x = city, y = price, fill = city)) +
-  # geom_boxplot(outlier.color = "blue") +
+  geom_boxplot(outlier.color = "blue") +
   labs(title = "Porównanie cen mieszkań w różnych miastach",
        x = "Miasto",
        y = "Cena (PLN)") + theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+
 
 ## Wykorzystanie pakietu ggstatsplot
 
@@ -835,12 +880,16 @@ ggbetweenstats(
   scale_fill_brewer(palette = "Set2")
 ```
 
+
+
 ## Dodanie testów zgodności rozkładu
 
 ```{r}
 library(nortest)
 lillie.test(data7$price) 
 ```
+
+
 
 ## Analiza wielowymiarowa – rozszerzenie modelu regresji
 
@@ -849,6 +898,8 @@ lm_interaction <- lm(price ~ rooms * buildYear, data = data7)
 summary(lm_interaction)
 plot(lm_interaction)
 ```
+
+
 
 ## Przykłady rozszerzonych analiz i wizualizacji
 
@@ -863,3 +914,12 @@ ggscatterstats(
   xlab = "Odległość od uczelni (km)",
   ylab = "Cena (PLN)")
 ```
+
+
+
+# Podsumowanie i wnioski
+
+Analiza cen mieszkań w Polsce ukazuje, że ich ceny są bardzo zróżnicowane. Największy wpływ na wartość nieruchomości mają lokalizacja, jej standard oraz liczba pokoi. Najwyższe ceny występują w dużych polskich miastach. Mieszkania w nowym budownictwie i na wyższych piętrach są droższe, co zazwyczaj wynika z lepszego standardu (premium), lepszych widoków czy większej prywatności. Na cenę mieszkań istotny wpływ ma także obecność windy, która jest szczególnie istotnym udogodnieniem w wysokich budynkach.W mniejszych miastach ceny są niższe, ale oferta jest bardziej ograniczona. Rok budowy oraz stan techniczny również wpływają na wartość nieruchomości, często w sposób negatywny. Większość cen nieruchomości zawiera się w przedziale od 500 tys. do 1 mln zł, lecz występują także mieszkania dużo droższe, w cenie nawet 2 mln zł. Najwięcej ofert dotyczy mieszkań 2- i 3-pokojowych, które także cieszą się największym zainteresowaniem wśród kupujących. Najmniej dostępnych jest mieszkań 1-, 5- oraz 6-pokojowych.
+
+
+Prognozy wskazują na dalszy wzrost cen w dużych ośrodkach miejskich, zwłaszcza w atrakcyjnych, centralnych lokalizacjach. Czynniki takie jak rosnące koszty materiałów budowlanych, zmniejszanie się powierzchni na budowę nowych mieszkań czy rozwój infrastruktury mogą również mieć wpływ na kształtowanie się rynku nieruchomości w przyszłości.
