@@ -54,18 +54,16 @@ miss_var_summary(data)
 
 #Pokazanie ile jest brakujących obserwacji w wierszach
 miss_case_table(data)
-#Większość obserwacji ma od 1 do 3 braków, co pozwala na zastosowanie imputacji brakujących danych
+
 
 
 #Wizualizacja braków danych
 vis_miss(data, cluster = TRUE, sort_miss = TRUE)
-#graficzne ukzanie, w których kolumnach mamy najwięcej brakujacych danych. Wykres potwierdza, że są to kolumny condition (74%), building material (41%), type (20%), floor (17%) oraz buildYear (16%)
 
 
 
 #wykres przedstawiający wzorce braków danych
 gg_miss_upset(data)
-#Z wykresu możemy odczytać, że najwięcej braków danych występuje jedynie w kolumnie condition, bez współwystępowania braku w innych kolumnach. Większa liczba braków danych występuje też zależnie zarówno w kolumnie condition jak i buildingMaterial oraz w kolumnach condition, buildingMaterial i type
 
 
 
@@ -73,67 +71,84 @@ gg_miss_upset(data)
 data %>% 
   group_by(city) %>% 
   miss_var_summary() %>% 
-  View()
-#Nie ma istotnych różnic w brakach danych między miastami. Ww wszystkich największy odsetek brakujacych danych stanowi kolumna condition.
+  View(data)
 
 
 
 
 #Sprawdzenie wartości odstających
 
-numeric_columns <- data %>% select(where(is.numeric)) %>% colnames()
+library(ggplot2)
+library(patchwork)
 
-for (col in numeric_columns) {
-  cat("\nKolumna:", col, "\n")
-  
-  # Tworzenie wykresu pudełkowego
-  boxplot_result <- boxplot(data[[col]], 
-                            main = paste("Wykres pudełkowy dla", col), 
-                            col = "lightblue", 
-                            ylab = col)
-  
+wykres1 <- ggplot(data, aes(y = centreDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do centrum")
 
-}
+wykres2 <- ggplot(data, aes(y = schoolDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do szkoły")
 
-#Analiza wartości odstających:
+combined_plots <- wykres1 + wykres2 
+combined_plots
 
-#Cena -> wartości odstające powyżej 2mln, do 3mn - brak podstaw do usuwania dancyh odstających, gdyż są to realne ceny za mieszkania
-#Metry kwadratowe -> wartości odstające do max 140m2 - mają sens
-#Pokoje, piętra oraz liczba pięter -> niewielka liczba możliwych wartości odstających, piętro na kt.orym jest mieszkanie nie przewyższa ogólnej liczby pięter
-#Rok budowy -> wartości odstające poniżej roku 1900, lecz powyżej roku 1850 - mają sens
-#poiCount?
-#Dużo wartości odstających w odległościach do różnych punkót usłgowych, lecz poniżej 5km - wyniki mają sens
-#Na podstawie powyższej analizy, możemy stwierdzic, że pomimo występowania wartości odstających nie wyglądają one na błędy i nasze dane są spójne, brak konieczności usuwania danych odstających
+wykres3 <- ggplot(data, aes(y = clinicDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do kliniki")
 
 
+wykres4 <- ggplot(data, aes(y = postOfficeDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do poczty")
+
+combined_plots <- wykres3 + wykres4 
+combined_plots
+
+wykres5 <- ggplot(data, aes(y = kindergartenDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do przedszkola")
+
+wykres6 <- ggplot(data, aes(y = restaurantDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do restauracji")
+
+combined_plots <- wykres5 + wykres6
+combined_plots
+
+wykres7 <- ggplot(data, aes(y = collegeDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot dystans do uniwersytetu")
+
+wykres8 <- ggplot(data, aes(y = pharmacyDistance)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot liczba dystans do apteki")
+
+combined_plots <- wykres7 + wykres8 
+combined_plots
 
 #Imputacja danych
 
 #1. Condition
-# Z racji tego, że stan normalny zazwyczaj nie jest określany w ogłoszeniach nieruchomości (chcemy się pochwalić stanem premium lub zaznaczyć niski standard mieszkania), z logicznego punktu widzenia, możemy uzupełnić braki danych w tej kolumnie jako 'standard'
 
 data1Condition <- data %>% 
   mutate(condition = ifelse(is.na(condition), "Standard", condition))
 View(data1Condition)
 na_count_condition <- sum(is.na(data1Condition$condition))
 print(na_count_condition)
-#Brak wartości NA
+
 
 
 
 #2. Building Material 
-#Zmienna ta nie powinna mieć istotnego wpływu na cenę, kupujący zazwyczaj nie zwacają uwagi na aspekt matriałów użytych do budowy domu, w którym znajduje się mieszkanie. Aby zastąpić brakujące obserwacje użyjemy sformułowania "Material is not known/different building material". Jeśli w późniejszej analizie zostanie wykazany wpływ tego czynnika na cenę, bedziemy brać go pod uwagę.
 data2Condition.buildingMaterial <- data1Condition %>% 
   mutate(buildingMaterial = ifelse(is.na(buildingMaterial), "Material is not known/different building material", buildingMaterial))
 View(data2Condition.buildingMaterial)
 na_count_condition <- sum(is.na(data2Condition.buildingMaterial$buildingMaterial))
 print(na_count_condition)
-#Brak wartości NA
 
 
 
 #3.Type
-#Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
 
 
 dataCBT <- kNN(data2Condition.buildingMaterial,
@@ -144,12 +159,11 @@ View(dataCBT)
 
 na_count_condition <- sum(is.na(dataCBT$type))
 print(na_count_condition)
-#Brak wartości NA
+
 
 
 
 #4. Floor Count 
-#Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne city, type oraz condition.
 dataCBTFC <- dataCBT %>%
   group_by(city, type, condition) %>%  
   mutate(floorCount = ifelse(is.na(floorCount), median(floorCount, na.rm = TRUE), floorCount)) %>%
@@ -157,13 +171,11 @@ dataCBTFC <- dataCBT %>%
 View(dataCBTFC)
 na_count_condition <- sum(is.na(dataCBTFC$floorCount))
 print(na_count_condition)
-#Brak wartości NA
+
 
 
 
 #5.Floor 
-#Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount oraz type.
-
 data2 <- dataCBTFC %>%
   group_by(floorCount, type) %>%
   mutate(floor = ifelse(is.na(floor), median(floor, na.rm = TRUE), floor)) %>%
@@ -171,13 +183,11 @@ data2 <- dataCBTFC %>%
 View(data2)
 na_count_condition <- sum(is.na(data2$floor))
 print(na_count_condition)
-#Brak wartości NA
+
 
 
 
 #6. Build Year
-#Brakujące wartości uzupełnione na podstawie grupowania oraz wyliczania mediany wartości w tychże grupach. Do porównania zostały użyte zmienne floorCount, type, city.
-
 data3 <- data2 %>%
   group_by(floorCount, type, city) %>%
   mutate(buildYear = ifelse(is.na(buildYear), median(buildYear, na.rm = TRUE), buildYear)) %>%
@@ -186,7 +196,7 @@ View(data3)
 na_count_condition <- sum(is.na(data3$buildYear))
 print(na_count_condition)
 
-#37 wartości NA, ponawiamy imputację danych za pomocą mediany, lecz tym razem dla całego zbioru danych (liczba brakujących obserwacji jest bardzo mała)
+
 
 data4 <- data3 %>%
   mutate(buildYear = ifelse(is.na(buildYear), 
@@ -194,12 +204,11 @@ data4 <- data3 %>%
                             buildYear))
 na_count_condition <- sum(is.na(data4$buildYear))
 print(na_count_condition)
-#Brak wartości NA
+
 
 
 
 #7.has Elevator
-#Brakujące wartości zostaną uzupełnione z użyciem metody k-NN (k-Nearest Neighbors), która zastąpi nam brakujące wartości na podstawie sąsiadujących obserwacji, które są najbardziej podobne do brakującego wiersza
 
 data5 <- kNN(data4, 
                 variable = c("hasElevator"),
@@ -209,12 +218,12 @@ View(data5)
 
 na_count_condition <- sum(is.na(data5$hasElevator))
 print(na_count_condition)
-#Brak wartości NA
+
 
 
 
 #8. Distance - college, clinic, restaurant, pharmacy, postoffice, kindergarten, school
-#Mała liczba wartości NA, imputacja może być wyliczana na podstawie mediany dla wszystkich obserwacji
+
 
 data1 <- data5 %>%
   mutate(collegeDistance = ifelse(is.na(collegeDistance), median(collegeDistance, na.rm = TRUE), collegeDistance))
@@ -250,7 +259,7 @@ data7 <- data6 %>%
   mutate(schoolDistance = ifelse(is.na(schoolDistance), median(schoolDistance, na.rm = TRUE), schoolDistance))
 miss_var_summary(data7)
 
-#BRAK WARTOŚCI ODSTAJĄCYCH W NASZYM ZBIORZE DANYCH
+
 
 # Wykres 1: Histogram cen mieszkań
 p1 <- ggplot(data, aes(x = price)) +
@@ -399,15 +408,10 @@ if(summary(anova_model)[[1]]$`Pr(>F)`[1] < 0.05) {
 #Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
 anova_type <- aov(price ~ type, data = data7)
 summary(anova_type)
-# Istnieją istotne różnice w cenach mieszkań 
+
 
 tukey_result <- TukeyHSD(anova_model)
 print(tukey_result)
-#Test Tukeya potwierdza głębokie zróżnicowanie cen mieszkań w Polsce.
-#Najwyższe ceny występują w dużych aglomeracjach, podczas gdy mniejsze miasta pozostają znacznie tańsze.
-#Miasta o najwyższych cenach mieszkań: Warszawa, Kraków, Gdańsk, Wrocław i Poznań mają istotnie wyższe
-#ceny mieszkań w porównaniu z większością innych miast (np. różnice sięgające nawet 500 000 PLN).
-#Przykład: warszawa-bialystok: różnica +541 443 PLN (p < 0.0001). krakow-bialystok: różnica +430 477 PLN (p < 0.0001).
 
 # Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między typami mieszkań
 anova_type <- aov(price ~ type, data = data7)
@@ -417,32 +421,28 @@ if (summary(anova_type)[[1]]$`Pr(>F)`[1] < 0.05) {
   tukey_type <- TukeyHSD(anova_type)
   print(tukey_type)
 }
-# Apartamentowce wymagają większego kapitału, bloki mieszkalne są bardziej przystępne cenowo, a kamienice stanowią pośrednią opcję.
 
-#1. Porównanie: blok mieszkalny vs apartamentowiec: Bloki mieszkalne są średnio o 365 815 zł tańsze niż apartamentowce.
-#2. Porównanie: kamienica vs apartamentowiec: Kamienice są średnio o 211 115 zł tańsze niż apartamentowce.
-#3. Porównanie: kamienica vs blok mieszkalny: Kamienice są średnio o 154 701 zł droższe niż bloki mieszkalne.
 
 # Korelacja między ceną a odległością od uczelni
 cor_test_college <- cor.test(data7$price, data7$collegeDistance, method = "pearson")
 print(cor_test_college)
-#bliskość uczelni nie jest istotnym czynnikiem kształtującym ceny mieszkań.
+
 
 
 # Korelacja między ceną a odległością od centrum
 cor_test_centre <- cor.test(data7$price, data7$centreDistance, method = "pearson")
 print(cor_test_centre)
-#odległość od centrum ma bardzo niewielki wpływ na ceny mieszkań.
+
 
 # Korelacja między ceną a rokiem budowy
 cor_test_buildYear <- cor.test(data7$price, data7$buildYear, method = "pearson")
 print(cor_test_buildYear)
-#nowsze budynki mają tendencję do wyższych cen
+
 
 # Przeprowadzenie testu ANOVA, aby sprawdzić, czy średnie ceny różnią się między stanami mieszkań
 anova_condition <- aov(price ~ condition, data = data7)
 summary(anova_condition)
-#stan mieszkania ma znaczący wpływ na cenę,
+
 
 if (summary(anova_condition)[[1]]$`Pr(>F)`[1] < 0.05) {
   tukey_condition <- TukeyHSD(anova_condition)
@@ -453,10 +453,6 @@ ggplot(data7, aes(x = condition, y = price, fill = condition)) +
   geom_boxplot(outlier.color = "red") +
   labs(title = "Średnie ceny mieszkań w zależności od stanu", x = "Stan mieszkania", y = "Cena (PLN)") +
   theme_minimal()
-#Średnie ceny mieszkań znacząco różnią się w zależności od stanu mieszkania:
-#Mieszkania w stanie premium mają najwyższe średnie ceny.
-#Mieszkania w stanie Standard są droższe niż w stanie low, ale tańsze niż premium.
-#Stan low wiąże się z najniższymi średnimi cenami mieszkań.
 
 # Tworzenie tabeli kontyngencji dla miasta i typu mieszkania
 contingency_table <- table(data7$city, data7$type)
@@ -470,10 +466,7 @@ mosaicplot(contingency_table, main = "Mozaikowy wykres zależności", color = TR
 # Przeprowadzenie testu t-Studenta, aby porównać ceny mieszkań z windą i bez windy
 t_test_elevator <- t.test(price ~ hasElevator, data = data7)
 print(t_test_elevator)
-#Wyniki testu wskazują, że obecność windy ma istotny wpływ na cenę mieszkań. 
-#Mieszkania z windą są średnio droższe od mieszkań bez windy o około 177 000 PLN.
-#Może to wynikać z faktu, że winda jest istotnym udogodnieniem, szczególnie w budynkach 
-#wielopiętrowych. Wpływa na postrzeganą wartość nieruchomości.
+
 
 ggplot(data7, aes(x = hasElevator, y = price, fill = hasElevator)) +
   geom_boxplot(outlier.color = "red") +
@@ -486,11 +479,8 @@ ggplot(data7, aes(x = hasElevator, y = price, fill = hasElevator)) +
 # Test Kruskala-Wallisa do porównania cen między miastami
 kruskal_result <- kruskal.test(price ~ city, data = data7)
 print(kruskal_result)
-#Wyniki testu Kruskala-Wallisa wskazują, że istnieją statystycznie istotne 
-#różnice w rozkładach cen mieszkań między miastami.
+
 pairwise.wilcox.test(data7$price, data7$city, p.adjust.method = "bonferroni")
-#Większość miast różni się istotnie pod względem median cen mieszkań, co wskazuje 
-#na zróżnicowany rynek nieruchomości w zależności od lokalizacji.
 
 ggplot(data7, aes(x = city, y = price, fill = city)) +
   # geom_boxplot(outlier.color = "blue") +
